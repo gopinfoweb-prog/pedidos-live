@@ -6,9 +6,7 @@
 <title>Pedidos Live</title>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
-
   body {
     background: #060a12;
     font-family: 'Share Tech Mono', monospace;
@@ -16,29 +14,19 @@
     min-height: 100vh;
     overflow-x: hidden;
   }
-
-  /* Grid de puntos de fondo */
   body::before {
     content: '';
-    position: fixed;
-    inset: 0;
-    background-image:
-      radial-gradient(circle, #0ff1 1px, transparent 1px);
+    position: fixed; inset: 0;
+    background-image: radial-gradient(circle, #0ff1 1px, transparent 1px);
     background-size: 28px 28px;
-    pointer-events: none;
-    z-index: 0;
+    pointer-events: none; z-index: 0;
   }
-
-  /* Línea de escaneo que baja por toda la pantalla */
   body::after {
     content: '';
-    position: fixed;
-    left: 0; right: 0;
-    height: 2px;
+    position: fixed; left: 0; right: 0; height: 2px;
     background: linear-gradient(90deg, transparent, #0ff4, #0ff, #0ff4, transparent);
     animation: scanline 4s linear infinite;
-    z-index: 1;
-    pointer-events: none;
+    z-index: 1; pointer-events: none;
   }
   @keyframes scanline {
     0%   { top: -2px; opacity: 0; }
@@ -46,33 +34,23 @@
     95%  { opacity: 1; }
     100% { top: 100vh; opacity: 0; }
   }
-
   .container {
-    position: relative;
-    z-index: 2;
+    position: relative; z-index: 2;
     padding: 16px 12px 24px;
-    max-width: 480px;
-    margin: 0 auto;
+    max-width: 480px; margin: 0 auto;
   }
-
-  /* Header */
   .header {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 18px;
-    padding-bottom: 10px;
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 18px; padding-bottom: 10px;
     border-bottom: 1px solid #0ff2;
   }
   .header-title { font-size: 12px; color: #0ff9; letter-spacing: 0.15em; }
-
   .live-badge {
     display: flex; align-items: center; gap: 7px;
     font-size: 10px; color: #0f0; letter-spacing: 0.12em;
   }
   .live-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: #0f0;
+    width: 8px; height: 8px; border-radius: 50%; background: #0f0;
     box-shadow: 0 0 0 0 #0f06;
     animation: pulse 1.5s ease-out infinite;
   }
@@ -81,313 +59,199 @@
     70%  { box-shadow: 0 0 0 8px #0f000; }
     100% { box-shadow: 0 0 0 0 #0f000; }
   }
+  .clock { font-size: 10px; color: #446688; letter-spacing: 0.1em; }
 
-  .clock {
-    font-size: 10px; color: #446688; letter-spacing: 0.1em;
-  }
-
-  /* Cards */
   .card {
-    background: #0a0f1c;
-    border: 1px solid #0ff2;
-    border-radius: 4px;
-    margin-bottom: 10px;
-    position: relative;
-    overflow: hidden;
+    background: #0a0f1c; border: 1px solid #0ff2;
+    border-radius: 4px; margin-bottom: 10px;
+    position: relative; overflow: hidden;
     animation: fadeIn 0.4s ease both;
   }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
     to   { opacity: 1; transform: translateY(0); }
   }
-  .card:nth-child(1) { animation-delay: 0.05s; }
-  .card:nth-child(2) { animation-delay: 0.15s; }
-  .card:nth-child(3) { animation-delay: 0.25s; }
-  .card:nth-child(4) { animation-delay: 0.35s; }
-  .card:nth-child(5) { animation-delay: 0.45s; }
-
-  /* Borde izquierdo de color por estado */
   .card::before {
-    content: '';
-    position: absolute; top: 0; left: 0;
+    content: ''; position: absolute; top: 0; left: 0;
     width: 3px; height: 100%;
   }
-  .card.pend::before  { background: #ff3344; }
-  .card.proc::before  { background: #ff9500; }
-  .card.term::before  { background: #ffe600; }
-  .card.desp::before  { background: #00cfff; }
-  .card.recv::before  { background: #00e64d; }
+  .card.PENDIENTE::before  { background: #ff3344; }
+  .card.EN-PROCESO::before { background: #ff9500; }
+  .card.TERMINADO::before  { background: #ffe600; }
+  .card.DESPACHADO::before { background: #00cfff; }
+  .card.RECIBIDO::before   { background: #00e64d; }
 
-  /* Corners decorativos */
-  .card .c { position: absolute; width: 8px; height: 8px; }
-  .card .tl { top: 0; left: 0; border-top: 1px solid #0ff5; border-left: 1px solid #0ff5; }
-  .card .tr { top: 0; right: 0; border-top: 1px solid #0ff5; border-right: 1px solid #0ff5; }
-  .card .bl { bottom: 0; left: 0; border-bottom: 1px solid #0ff5; border-left: 1px solid #0ff5; }
-  .card .br { bottom: 0; right: 0; border-bottom: 1px solid #0ff5; border-right: 1px solid #0ff5; }
+  .c { position: absolute; width: 8px; height: 8px; }
+  .tl { top:0;left:0; border-top:1px solid #0ff5; border-left:1px solid #0ff5; }
+  .tr { top:0;right:0; border-top:1px solid #0ff5; border-right:1px solid #0ff5; }
+  .bl { bottom:0;left:0; border-bottom:1px solid #0ff5; border-left:1px solid #0ff5; }
+  .br { bottom:0;right:0; border-bottom:1px solid #0ff5; border-right:1px solid #0ff5; }
 
   .card-inner { padding: 10px 12px 10px 15px; }
-
-  .card-top {
-    display: flex; align-items: flex-start;
-    justify-content: space-between; gap: 8px;
-  }
-  .card-product {
-    font-size: 11px; color: #d8f0ff; letter-spacing: 0.04em; line-height: 1.3;
-    flex: 1; min-width: 0;
-  }
+  .card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
+  .card-product { font-size:11px; color:#d8f0ff; letter-spacing:0.04em; line-height:1.3; flex:1; min-width:0; }
   .card-qty {
-    font-size: 9px; color: #0ff; letter-spacing: 0.08em;
-    background: #0ff1; border: 1px solid #0ff3;
-    padding: 2px 7px; border-radius: 2px; flex-shrink: 0;
+    font-size:9px; color:#0ff; letter-spacing:0.08em;
+    background:#0ff1; border:1px solid #0ff3;
+    padding:2px 7px; border-radius:2px; flex-shrink:0; white-space:nowrap;
   }
-
-  .card-client {
-    font-size: 10px; color: #446688; margin-top: 3px; letter-spacing: 0.05em;
-  }
-
-  .card-mid {
-    display: flex; align-items: center; margin-top: 10px; gap: 10px;
-  }
-
-  /* Barra de progreso animada */
-  .bar-wrap { flex: 1; }
-  .bar-track {
-    height: 4px; background: #111c2a; border-radius: 2px; overflow: hidden;
-  }
-  .bar-fill {
-    height: 100%; border-radius: 2px;
-    animation: barGrow 1s cubic-bezier(.4,0,.2,1) both;
-  }
-  @keyframes barGrow {
-    from { width: 0 !important; }
-  }
-  .bar-labels {
-    display: flex; justify-content: space-between;
-    margin-top: 5px;
-  }
-  .bar-label {
-    font-size: 7px; letter-spacing: 0.06em; color: #334455;
-  }
+  .card-client { font-size:10px; color:#446688; margin-top:3px; letter-spacing:0.05em; }
+  .card-mid { display:flex; align-items:center; margin-top:10px; gap:10px; }
+  .bar-wrap { flex:1; }
+  .bar-track { height:4px; background:#111c2a; border-radius:2px; overflow:hidden; }
+  .bar-fill { height:100%; border-radius:2px; animation: barGrow 1s cubic-bezier(.4,0,.2,1) both; }
+  @keyframes barGrow { from { width: 0 !important; } }
+  .bar-labels { display:flex; justify-content:space-between; margin-top:5px; }
+  .bar-label { font-size:7px; letter-spacing:0.06em; color:#334455; }
   .bar-label.active { color: inherit; }
-
-  /* Número de días */
-  .demora-box { text-align: right; flex-shrink: 0; }
-  .demora-num { font-size: 22px; line-height: 1; }
-  .demora-num.red  { color: #ff3344; }
-  .demora-num.ora  { color: #ff9500; }
-  .demora-num.grn  { color: #00e64d; }
-  .demora-unit { font-size: 8px; color: #446688; letter-spacing: 0.1em; }
-
-  .card-bottom { margin-top: 7px; }
+  .demora-box { text-align:right; flex-shrink:0; }
+  .demora-num { font-size:22px; line-height:1; }
+  .demora-unit { font-size:8px; color:#446688; letter-spacing:0.1em; }
+  .card-bottom { margin-top:7px; }
   .estado-pill {
-    font-size: 8px; letter-spacing: 0.12em;
-    padding: 2px 8px; border-radius: 2px; border: 1px solid;
+    font-size:8px; letter-spacing:0.12em;
+    padding:2px 8px; border-radius:2px; border:1px solid;
   }
-  .estado-pill.pend { color: #ff3344; border-color: #ff33442a; background: #ff33440d; }
-  .estado-pill.proc { color: #ff9500; border-color: #ff95002a; background: #ff95000d; }
-  .estado-pill.term { color: #ffe600; border-color: #ffe6002a; background: #ffe6000d; }
-  .estado-pill.desp { color: #00cfff; border-color: #00cfff2a; background: #00cfff0d; }
-  .estado-pill.recv { color: #00e64d; border-color: #00e64d2a; background: #00e64d0d; }
+  .pill-PENDIENTE  { color:#ff3344; border-color:#ff33442a; background:#ff33440d; }
+  .pill-EN-PROCESO { color:#ff9500; border-color:#ff95002a; background:#ff95000d; }
+  .pill-TERMINADO  { color:#ffe600; border-color:#ffe6002a; background:#ffe6000d; }
+  .pill-DESPACHADO { color:#00cfff; border-color:#00cfff2a; background:#00cfff0d; }
+  .pill-RECIBIDO   { color:#00e64d; border-color:#00e64d2a; background:#00e64d0d; }
 
-  /* Footer */
-  .footer {
-    text-align: center; font-size: 9px; color: #223344;
-    letter-spacing: 0.1em; margin-top: 8px;
+  .loading {
+    text-align:center; color:#0ff6; font-size:12px;
+    letter-spacing:0.15em; padding:40px 0;
+    animation: blink2 1s infinite;
   }
+  @keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
+  .error { text-align:center; color:#ff3344; font-size:11px; padding:30px 12px; letter-spacing:0.08em; }
+  .footer { text-align:center; font-size:9px; color:#223344; letter-spacing:0.1em; margin-top:8px; }
+  .refresh-btn {
+    display:block; margin:12px auto 0; background:transparent;
+    border:1px solid #0ff3; color:#0ff8; font-family:'Share Tech Mono',monospace;
+    font-size:10px; letter-spacing:0.12em; padding:6px 16px;
+    border-radius:2px; cursor:pointer;
+  }
+  .refresh-btn:active { background:#0ff1; }
 </style>
 </head>
 <body>
 <div class="container">
-
   <div class="header">
-    <span class="header-title">// SISTEMA DE PEDIDOS</span>
+    <span class="header-title">// LUXURY · PEDIDOS</span>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-      <div class="live-badge">
-        <div class="live-dot"></div>
-        LIVE
-      </div>
+      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
       <div class="clock" id="clock">--:--:--</div>
     </div>
   </div>
 
-  <div class="card proc">
-    <div class="c tl"></div><div class="c tr"></div>
-    <div class="c bl"></div><div class="c br"></div>
-    <div class="card-inner">
-      <div class="card-top">
-        <div class="card-product">Colchón 50K PLUS 190×100×34</div>
-        <div class="card-qty">25 ud.</div>
-      </div>
-      <div class="card-client">&gt; En sueños</div>
-      <div class="card-mid">
-        <div class="bar-wrap">
-          <div class="bar-track">
-            <div class="bar-fill" style="width:40%;background:#ff9500;"></div>
-          </div>
-          <div class="bar-labels">
-            <span class="bar-label">PEND</span>
-            <span class="bar-label active" style="color:#ff9500;">PROC</span>
-            <span class="bar-label">TERM</span>
-            <span class="bar-label">DESP</span>
-            <span class="bar-label">RECV</span>
-          </div>
-        </div>
-        <div class="demora-box">
-          <div class="demora-num red">157</div>
-          <div class="demora-unit">DÍAS</div>
-        </div>
-      </div>
-      <div class="card-bottom">
-        <span class="estado-pill proc">EN PROCESO</span>
-      </div>
-    </div>
-  </div>
+  <div id="cards"><div class="loading">CARGANDO DATOS...</div></div>
 
-  <div class="card pend">
-    <div class="c tl"></div><div class="c tr"></div>
-    <div class="c bl"></div><div class="c br"></div>
-    <div class="card-inner">
-      <div class="card-top">
-        <div class="card-product">Colchón FIT 190×100×22</div>
-        <div class="card-qty">100 ud.</div>
-      </div>
-      <div class="card-client">&gt; Sueños míos</div>
-      <div class="card-mid">
-        <div class="bar-wrap">
-          <div class="bar-track">
-            <div class="bar-fill" style="width:8%;background:#ff3344;"></div>
-          </div>
-          <div class="bar-labels">
-            <span class="bar-label active" style="color:#ff3344;">PEND</span>
-            <span class="bar-label">PROC</span>
-            <span class="bar-label">TERM</span>
-            <span class="bar-label">DESP</span>
-            <span class="bar-label">RECV</span>
-          </div>
-        </div>
-        <div class="demora-box">
-          <div class="demora-num red">66</div>
-          <div class="demora-unit">DÍAS</div>
-        </div>
-      </div>
-      <div class="card-bottom">
-        <span class="estado-pill pend">PENDIENTE</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="card desp">
-    <div class="c tl"></div><div class="c tr"></div>
-    <div class="c bl"></div><div class="c br"></div>
-    <div class="card-inner">
-      <div class="card-top">
-        <div class="card-product">Colchón FIT 190×80×22</div>
-        <div class="card-qty">52 ud.</div>
-      </div>
-      <div class="card-client">&gt; Descanso pleno</div>
-      <div class="card-mid">
-        <div class="bar-wrap">
-          <div class="bar-track">
-            <div class="bar-fill" style="width:80%;background:#00cfff;"></div>
-          </div>
-          <div class="bar-labels">
-            <span class="bar-label">PEND</span>
-            <span class="bar-label">PROC</span>
-            <span class="bar-label">TERM</span>
-            <span class="bar-label active" style="color:#00cfff;">DESP</span>
-            <span class="bar-label">RECV</span>
-          </div>
-        </div>
-        <div class="demora-box">
-          <div class="demora-num ora">34</div>
-          <div class="demora-unit">DÍAS</div>
-        </div>
-      </div>
-      <div class="card-bottom">
-        <span class="estado-pill desp">DESPACHADO</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="card recv">
-    <div class="c tl"></div><div class="c tr"></div>
-    <div class="c bl"></div><div class="c br"></div>
-    <div class="card-inner">
-      <div class="card-top">
-        <div class="card-product">Colchón 50K PLUS 190×160×34</div>
-        <div class="card-qty">100 ud.</div>
-      </div>
-      <div class="card-client">&gt; Cuello construcciones</div>
-      <div class="card-mid">
-        <div class="bar-wrap">
-          <div class="bar-track">
-            <div class="bar-fill" style="width:100%;background:#00e64d;"></div>
-          </div>
-          <div class="bar-labels">
-            <span class="bar-label">PEND</span>
-            <span class="bar-label">PROC</span>
-            <span class="bar-label">TERM</span>
-            <span class="bar-label">DESP</span>
-            <span class="bar-label active" style="color:#00e64d;">RECV</span>
-          </div>
-        </div>
-        <div class="demora-box">
-          <div class="demora-num grn">17</div>
-          <div class="demora-unit">DÍAS</div>
-        </div>
-      </div>
-      <div class="card-bottom">
-        <span class="estado-pill recv">RECIBIDO</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="card recv">
-    <div class="c tl"></div><div class="c tr"></div>
-    <div class="c bl"></div><div class="c br"></div>
-    <div class="card-inner">
-      <div class="card-top">
-        <div class="card-product">Colchón 50K 190×90×26</div>
-        <div class="card-qty">1 ud.</div>
-      </div>
-      <div class="card-client">&gt; Sueños míos</div>
-      <div class="card-mid">
-        <div class="bar-wrap">
-          <div class="bar-track">
-            <div class="bar-fill" style="width:100%;background:#00e64d;"></div>
-          </div>
-          <div class="bar-labels">
-            <span class="bar-label">PEND</span>
-            <span class="bar-label">PROC</span>
-            <span class="bar-label">TERM</span>
-            <span class="bar-label">DESP</span>
-            <span class="bar-label active" style="color:#00e64d;">RECV</span>
-          </div>
-        </div>
-        <div class="demora-box">
-          <div class="demora-num grn">2</div>
-          <div class="demora-unit">DÍAS</div>
-        </div>
-      </div>
-      <div class="card-bottom">
-        <span class="estado-pill recv">RECIBIDO</span>
-      </div>
-    </div>
-  </div>
-
-  <div class="footer">// FIN DE REGISTROS · LUXURY SYSTEM</div>
+  <button class="refresh-btn" onclick="cargarDatos()">↺ ACTUALIZAR</button>
+  <div class="footer" id="footer"></div>
 </div>
 
 <script>
-  function tick() {
+const SHEET_ID = '1Zd4OApS21VwEA29jHzbAM0P_Q8T6BOaChgj9q5EhNWo';
+const SHEET_NAME = 'PEDIDOS';
+const URL = `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(SHEET_NAME)}`;
+
+const ESTADOS = ['PENDIENTE','EN PROCESO','TERMINADO','DESPACHADO','RECIBIDO'];
+const COLORES = {
+  'PENDIENTE':  { bar:'#ff3344', text:'#ff3344' },
+  'EN PROCESO': { bar:'#ff9500', text:'#ff9500' },
+  'TERMINADO':  { bar:'#ffe600', text:'#ffe600' },
+  'DESPACHADO': { bar:'#00cfff', text:'#00cfff' },
+  'RECIBIDO':   { bar:'#00e64d', text:'#00e64d' },
+};
+const BAR_PCT = { 'PENDIENTE':8, 'EN PROCESO':33, 'TERMINADO':58, 'DESPACHADO':80, 'RECIBIDO':100 };
+const NUM_COLOR = pct => pct <= 33 ? '#ff3344' : pct <= 58 ? '#ff9500' : '#00e64d';
+
+function estadoKey(e){ return (e||'').trim().toUpperCase(); }
+function cssKey(e){ return estadoKey(e).replace(/ /g,'-'); }
+
+async function cargarDatos(){
+  document.getElementById('cards').innerHTML = '<div class="loading">CARGANDO DATOS...</div>';
+  try {
+    const res = await fetch(URL + '&t=' + Date.now());
+    const txt = await res.text();
+    const json = JSON.parse(txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
+    const rows = json.table.rows;
+
+    if(!rows || rows.length === 0){
+      document.getElementById('cards').innerHTML = '<div class="error">// SIN PEDIDOS REGISTRADOS</div>';
+      return;
+    }
+
+    let html = '';
+    rows.forEach((row, i) => {
+      const cols = row.c;
+      const fecha    = cols[1]?.v || '';
+      const clienteId= cols[2]?.v || '';
+      const producto = cols[3]?.v || '';
+      const cantidad = cols[4]?.v || '';
+      const nota     = cols[5]?.v || '';
+      const estado   = estadoKey(cols[6]?.v || 'PENDIENTE');
+      const ck       = cssKey(estado);
+      const color    = COLORES[estado] || COLORES['PENDIENTE'];
+      const pct      = BAR_PCT[estado] || 8;
+      const nc       = NUM_COLOR(pct);
+
+      const etiquetas = ESTADOS.map(e => {
+        const isActive = estadoKey(e) === estado;
+        const col = isActive ? `color:${color.text}` : '';
+        return `<span class="bar-label${isActive?' active':''}" style="${col}">${e.replace(' ','&nbsp;')}</span>`;
+      }).join('');
+
+      html += `
+      <div class="card ${ck}" style="animation-delay:${i*0.08}s">
+        <div class="c tl"></div><div class="c tr"></div>
+        <div class="c bl"></div><div class="c br"></div>
+        <div class="card-inner">
+          <div class="card-top">
+            <div class="card-product">${producto || '—'}</div>
+            <div class="card-qty">${cantidad} ud.</div>
+          </div>
+          <div class="card-client">&gt; ${clienteId}${nota ? ' · ' + nota : ''}</div>
+          <div class="card-mid">
+            <div class="bar-wrap">
+              <div class="bar-track">
+                <div class="bar-fill" style="width:${pct}%;background:${color.bar};"></div>
+              </div>
+              <div class="bar-labels">${etiquetas}</div>
+            </div>
+            <div class="demora-box">
+              <div class="demora-num" style="color:${nc}">${fecha}</div>
+              <div class="demora-unit">FECHA</div>
+            </div>
+          </div>
+          <div class="card-bottom">
+            <span class="estado-pill pill-${ck}">${estado}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+
+    document.getElementById('cards').innerHTML = html;
     const now = new Date();
-    const h = String(now.getHours()).padStart(2,'0');
-    const m = String(now.getMinutes()).padStart(2,'0');
-    const s = String(now.getSeconds()).padStart(2,'0');
-    document.getElementById('clock').textContent = h + ':' + m + ':' + s;
+    document.getElementById('footer').textContent =
+      `// SYNC ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} · ${rows.length} REGISTROS`;
+  } catch(e) {
+    document.getElementById('cards').innerHTML =
+      '<div class="error">// ERROR AL CARGAR DATOS<br>Verificá que la hoja sea pública</div>';
   }
-  tick();
-  setInterval(tick, 1000);
+}
+
+function tick(){
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
+}
+
+tick();
+setInterval(tick, 1000);
+setInterval(cargarDatos, 60000);
+cargarDatos();
 </script>
 </body>
 </html>

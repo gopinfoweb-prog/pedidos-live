@@ -21,19 +21,6 @@
     background-size: 28px 28px;
     pointer-events: none; z-index: 0;
   }
-  body::after {
-    content: '';
-    position: fixed; left: 0; right: 0; height: 2px;
-    background: linear-gradient(90deg, transparent, #0ff4, #0ff, #0ff4, transparent);
-    animation: scanline 4s linear infinite;
-    z-index: 1; pointer-events: none;
-  }
-  @keyframes scanline {
-    0%   { top: -2px; opacity: 0; }
-    5%   { opacity: 1; }
-    95%  { opacity: 1; }
-    100% { top: 100vh; opacity: 0; }
-  }
   .container {
     position: relative; z-index: 2;
     padding: 16px 12px 24px;
@@ -47,19 +34,17 @@
   .header-title { font-size: 12px; color: #0ff9; letter-spacing: 0.15em; }
   .live-badge {
     display: flex; align-items: center; gap: 7px;
-    font-size: 10px; color: #0f0; letter-spacing: 0.12em;
+    font-size: 11px; color: #0f0; letter-spacing: 0.15em; font-weight: bold;
   }
   .live-dot {
-    width: 8px; height: 8px; border-radius: 50%; background: #0f0;
-    box-shadow: 0 0 0 0 #0f06;
-    animation: pulse 1.5s ease-out infinite;
+    width: 9px; height: 9px; border-radius: 50%; background: #0f0;
+    animation: pulse 1.2s ease-in-out infinite;
   }
   @keyframes pulse {
-    0%   { box-shadow: 0 0 0 0 #0f06; }
-    70%  { box-shadow: 0 0 0 8px #0f000; }
-    100% { box-shadow: 0 0 0 0 #0f000; }
+    0%, 100% { box-shadow: 0 0 0 0 #0f08; opacity: 1; }
+    50%       { box-shadow: 0 0 0 7px #0f000; opacity: 0.6; }
   }
-  .clock { font-size: 10px; color: #446688; letter-spacing: 0.1em; }
+  .clock { font-size: 13px; color: #7ecfff; letter-spacing: 0.12em; }
   .card {
     background: #0a0f1c; border: 1px solid #0ff2;
     border-radius: 4px; margin-bottom: 10px;
@@ -122,7 +107,10 @@
   }
   @keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
   .error { text-align:center; color:#ff3344; font-size:11px; padding:30px 12px; letter-spacing:0.08em; line-height:1.8; }
-  .footer { text-align:center; font-size:9px; color:#223344; letter-spacing:0.1em; margin-top:8px; }
+  .footer {
+    text-align:center; font-size:13px; color:#7ecfff;
+    letter-spacing:0.12em; margin-top:10px;
+  }
   .refresh-btn {
     display:block; margin:12px auto 0; background:transparent;
     border:1px solid #0ff3; color:#0ff8; font-family:'Share Tech Mono',monospace;
@@ -137,7 +125,7 @@
   <div class="header">
     <span class="header-title">// LUXURY · PEDIDOS</span>
     <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
-      <div class="live-badge"><div class="live-dot"></div>LIVE</div>
+      <div class="live-badge"><div class="live-dot"></div>EN VIVO</div>
       <div class="clock" id="clock">--:--:--</div>
     </div>
   </div>
@@ -237,7 +225,6 @@ async function cargarTodo() {
       const clienteId = String(cols[2]?.v || '');
       const prodId    = String(cols[3]?.v || '');
       const cantidad  = cols[4]?.v || '—';
-      const nota      = cols[5]?.v || '';
       const estadoRaw = estadoKey(cols[6]?.v || 'PENDIENTE');
 
       const fechaObj   = parseGoogleDate(fechaRaw);
@@ -265,7 +252,7 @@ async function cargarTodo() {
             <div class="card-product">${nombreProd}</div>
             <div class="card-qty">${cantidad} ud.</div>
           </div>
-          <div class="card-client">&gt; ${nombreCli}${nota ? ' · ' + nota : ''}</div>
+          <div class="card-client">&gt; ${nombreCli}</div>
           <div class="card-mid">
             <div class="bar-wrap">
               <div class="bar-track">

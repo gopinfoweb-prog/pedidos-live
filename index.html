@@ -230,7 +230,7 @@
   @keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
   .error { text-align:center; color:#ff3344; font-size:12px; padding:30px 12px; letter-spacing:0.08em; line-height:1.8; }
   
-  /* Footer ocultable */
+  /* Footer */
   .footer {
     text-align:center; font-size:13px; color:#7ecfff;
     letter-spacing:0.12em; margin-top:10px; display: block;
@@ -564,16 +564,14 @@ function togglePantalla() {
 }
 
 function imprimirPDF() {
-  const elementTareas = document.getElementById('cardsTareas');
-  if(!elementTareas || elementTareas.querySelectorAll('.card:not([style*="display: none"])').length === 0) {
+  const containerTareas = document.getElementById('cardsTareas');
+  const tareasCards = containerTareas.querySelectorAll('.card:not([style*="display: none"])');
+  
+  if (tareasCards.length === 0) {
     alert('No hay tareas para imprimir.');
     return;
   }
 
-  // 1. Crear el encabezado temporal de impresión
-  const tempHeader = document.createElement('div');
-  tempHeader.id = 'tempPrintHeader';
-  
   const now = new Date();
   const dia = String(now.getDate()).padStart(2, '0');
   const mes = String(now.getMonth() + 1).padStart(2, '0');
@@ -581,61 +579,88 @@ function imprimirPDF() {
   const horas = String(now.getHours()).padStart(2, '0');
   const minutos = String(now.getMinutes()).padStart(2, '0');
 
-  tempHeader.innerHTML = `
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0ff5; padding-bottom: 12px; margin-bottom: 20px;">
-      <img src="logo_original-removebg-preview.png" style="height: 45px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,0.1));">
-      <div style="text-align: right; font-family: 'Share Tech Mono', monospace;">
-        <div style="font-size: 14px; color: #00ffff; font-weight: bold; letter-spacing: 0.05em;">LISTA DE TAREAS DEL ${dia}/${mes}/${anio}</div>
-        <div style="font-size: 11px; color: #ffe600; margin-top: 4px; letter-spacing: 0.1em;">HORA DE IMPRESIÓN: ${horas}:${minutos}</div>
+  // 1. Crear un contenedor overlay visible temporalmente en el frente de la app
+  const overlay = document.createElement('div');
+  overlay.id = 'printOverlay';
+  overlay.style.position = 'fixed';
+  overlay.style.top = '0';
+  overlay.style.left = '0';
+  overlay.style.width = '100%';
+  overlay.style.height = '100%';
+  overlay.style.backgroundColor = '#060a12';
+  overlay.style.zIndex = '999999';
+  overlay.style.overflowY = 'auto';
+  overlay.style.padding = '40px 24px';
+  overlay.style.boxSizing = 'border-box';
+  overlay.style.fontFamily = "'Share Tech Mono', monospace";
+
+  // 2. Iterar solo sobre las tareas activas para generar las tarjetas limpias
+  let tasksHtml = '';
+  tareasCards.forEach(card => {
+    const prod = card.querySelector('.card-product').innerText;
+    const qty = card.querySelector('.card-qty').innerText;
+    
+    tasksHtml += `
+      <div style="background-color: #0a0f1c; border: 1px solid #00ffff; border-left: 6px solid #ff9500; border-radius: 4px; padding: 18px 20px; margin-bottom: 14px; display: flex; justify-content: space-between; align-items: center; box-sizing: border-box;">
+        <div style="font-size: 16px; color: #ffe600; font-weight: bold; font-family: 'Share Tech Mono', monospace;">${prod}</div>
+        <div style="font-size: 14px; color: #00ffff; border: 1px solid rgba(0, 255, 255, 0.4); padding: 4px 10px; border-radius: 2px; font-weight: bold; font-family: 'Share Tech Mono', monospace; background: rgba(0,255,255,0.05);">${qty}</div>
+      </div>
+    `;
+  });
+
+  // 3. Montar la estructura estática del documento final dentro del overlay
+  overlay.innerHTML = `
+    <div style="max-width: 600px; margin: 0 auto; background-color: #060a12; color: #c8e8ff;">
+      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #00ffff; padding-bottom: 16px; margin-bottom: 28px;">
+        <img src="logo_original-removebg-preview.png" style="height: 54px; object-fit: contain;">
+        <div style="text-align: right; font-family: 'Share Tech Mono', monospace;">
+          <div style="font-size: 18px; color: #00ffff; font-weight: bold; letter-spacing: 1px;">LISTA DE TAREAS</div>
+          <div style="font-size: 12px; color: #ffe600; margin-top: 5px;">${dia}/${mes}/${anio} - ${horas}:${minutos} HSS</div>
+        </div>
+      </div>
+      <div style="margin-bottom: 20px;">
+        ${tasksHtml}
       </div>
     </div>
   `;
 
-  // 2. Insertarlo dentro del contenedor visual original temporalmente
-  elementTareas.insertBefore(tempHeader, elementTareas.firstChild);
-  
+  // 4. Meter el overlay en el documento activo
+  document.body.appendChild(overlay);
+
   const opt = {
-    margin:       [10, 10, 15, 10], // top, left, bottom, right
+    margin:       [15, 15, 20, 15], // márgenes en mm (arriba, izquierda, abajo, derecha)
     filename:     `tareas_diarias_${dia}${mes}${anio}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { 
       scale: 2, 
-      useCORS: true, 
-      backgroundColor: '#060a12' 
+      useCORS: true,
+      backgroundColor: '#060a12',
+      logging: false
     },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
-  
-  // 3. Generar el PDF
-  html2pdf().set(opt).from(elementTareas).toPdf().get('pdf').then(function(pdf) {
+
+  // 5. Correr html2pdf tomando el elemento visible
+  html2pdf().set(opt).from(overlay).toPdf().get('pdf').then(function(pdf) {
     const totalPages = pdf.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
       pdf.setFont('courier', 'bold');
       pdf.setFontSize(10);
-      pdf.setTextColor(0, 255, 255); // Color cian de la app
+      pdf.setTextColor(0, 255, 255); // Cian
       
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
       const textoFooter = `HOJA ${i} DE ${totalPages}`;
       
       const textWidth = pdf.getStringUnitWidth(textoFooter) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
-      const xPos = (pageWidth - textWidth) / 2;
-      
-      pdf.text(textoFooter, xPos, pageHeight - 8);
+      pdf.text(textoFooter, (pageWidth - textWidth) / 2, pageHeight - 10);
     }
   }).save().then(() => {
-    // 4. Limpiar el DOM: borramos el encabezado para que todo vuelva a la normalidad en pantalla
-    const headerToRemove = document.getElementById('tempPrintHeader');
-    if(headerToRemove) {
-      headerToRemove.remove();
-    }
+    // 6. Eliminar por completo el elemento temporal una vez guardado
+    overlay.remove();
   }).catch(err => {
-    // Si hay un error, también lo borramos por las dudas
-    const headerToRemove = document.getElementById('tempPrintHeader');
-    if(headerToRemove) {
-      headerToRemove.remove();
-    }
+    overlay.remove();
     console.error("Error al generar PDF:", err);
   });
 }

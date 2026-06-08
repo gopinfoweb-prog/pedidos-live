@@ -204,6 +204,10 @@
     letter-spacing: 0.05em;
     transition: all 0.1s ease;
   }
+  .btn-informar:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
   
   .card.titilar-terminado {
     animation: titilarLento 1s linear 5;
@@ -236,7 +240,7 @@
 
 <div class="container">
   <div class="header">
-    <img class="logo-img" id="logoImg" src="https://lh3.googleusercontent.com/d/1AfstJKbihBXpQqWIEJfeVHzpmUebLEpF" alt="Luxury High Density" />
+    <img class="logo-img" id="logoImg" src="logo_original-removebg-preview.png" alt="Luxury High Density" />
     <div class="header-info">
       <div class="live-badge"><div class="live-dot"></div>EN VIVO</div>
       <div class="clock" id="clock">--:--:--</div>
@@ -496,32 +500,70 @@ function crearTareasDiarias() {
   if(enPedidos) togglePantalla();
 }
 
-function informarTerminado(index) {
+// ESTA ES LA ÚNICA FUNCIÓN QUE SE MODIFICÓ PARA INTEGRAR SHEETY
+async function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
   
-  btn.innerText = 'TERMINADO';
-  btn.style.backgroundColor = '#ffe600';
-  btn.style.color = '#060a12';
-  
-  card.classList.add('titilar-terminado');
-  
-  if (rawPedidos[index] && rawPedidos[index].c[6]) {
-    rawPedidos[index].c[6].v = 'TERMINADO';
-  }
+  // Feedback visual inmediato para saber que está trabajando
+  btn.innerText = 'GUARDANDO...';
+  btn.disabled = true;
 
-  setTimeout(() => {
-    card.style.display = 'none';
-    seleccionados.delete(index);
-    actualizarBotonImprimir();
-    
-    if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
-      if(!enPedidos) togglePantalla();
-      seleccionados.clear();
-      renderizarPedidos();
-      actualizarBotonTareas();
+  // Obtenemos el ID de la fila (Columna A de tu hoja)
+  const idFila = rawPedidos[index].c[0]?.v; 
+  
+  // URL de tu API de Sheety
+  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury/pedidos/${idFila}`;
+
+  try {
+    const respuesta = await fetch(url, {
+      method: 'PATCH',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        pedido: {
+          estado: 'TERMINADO' // IMPORTANTE: La columna en Google Sheets debe llamarse 'estado'
+        }
+      })
+    });
+
+    if (respuesta.ok) {
+      // Si Sheety actualizó correctamente la hoja, aplicamos la animación final
+      btn.innerText = 'TERMINADO';
+      btn.style.backgroundColor = '#ffe600';
+      btn.style.color = '#060a12';
+      
+      card.classList.add('titilar-terminado');
+      
+      if (rawPedidos[index] && rawPedidos[index].c[6]) {
+        rawPedidos[index].c[6].v = 'TERMINADO';
+      }
+
+      setTimeout(() => {
+        card.style.display = 'none';
+        seleccionados.delete(index);
+        actualizarBotonImprimir();
+        
+        if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
+          if(!enPedidos) togglePantalla();
+          seleccionados.clear();
+          renderizarPedidos();
+          actualizarBotonTareas();
+        }
+      }, 5000); 
+
+    } else {
+      // Si la API falla, mostramos un error pero no cerramos la tarjeta
+      console.error("Error al actualizar:", await respuesta.text());
+      alert("Hubo un error al guardar en Google Sheets.");
+      btn.innerText = 'Informar TERMINADO';
+      btn.disabled = false;
     }
-  }, 5000); 
+  } catch (error) {
+    console.error("Error de conexión:", error);
+    alert("Error de conexión al guardar.");
+    btn.innerText = 'Informar TERMINADO';
+    btn.disabled = false;
+  }
 }
 
 function togglePantalla() {

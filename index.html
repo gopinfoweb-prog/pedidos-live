@@ -496,12 +496,9 @@ function crearTareasDiarias() {
   if(enPedidos) togglePantalla();
 }
 
-// CORRECCIÓN AQUÍ: Petición real PUT a Sheety
 async function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
-  
-  // Usamos el ID de la fila (asumiendo que está en la primera columna, índice 0)
   const idFila = rawPedidos[index].c[0]?.v;
   const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury/pedidos/${idFila}`;
   
@@ -512,9 +509,7 @@ async function informarTerminado(index) {
     const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        pedido: { estado: 'TERMINADO' }
-      })
+      body: JSON.stringify({ pedido: { estado: 'TERMINADO' } })
     });
     
     if (response.ok) {
@@ -527,7 +522,9 @@ async function informarTerminado(index) {
         card.style.display = 'none';
         seleccionados.delete(index);
         actualizarBotonImprimir();
-        if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
+        
+        const tareasActivas = document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])');
+        if (tareasActivas.length === 0) {
           if(!enPedidos) togglePantalla();
           seleccionados.clear();
           renderizarPedidos();
@@ -535,10 +532,14 @@ async function informarTerminado(index) {
         }
       }, 2000);
     } else {
-      throw new Error('Error en API');
+      const err = await response.json();
+      console.error(err);
+      alert("Error al guardar: " + JSON.stringify(err));
+      btn.innerText = 'Informar TERMINADO';
+      btn.disabled = false;
     }
   } catch (err) {
-    alert("Error al guardar. Verificá que la URL y el método PUT sean correctos en Sheety.");
+    alert("Error de red. Verificá tu conexión.");
     btn.innerText = 'Informar TERMINADO';
     btn.disabled = false;
   }

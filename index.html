@@ -500,34 +500,29 @@ function crearTareasDiarias() {
   if(enPedidos) togglePantalla();
 }
 
-// ESTA ES LA ÚNICA FUNCIÓN QUE SE MODIFICÓ PARA INTEGRAR SHEETY
 async function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
   
-  // Feedback visual inmediato para saber que está trabajando
   btn.innerText = 'GUARDANDO...';
   btn.disabled = true;
 
-  // Obtenemos el ID de la fila (Columna A de tu hoja)
   const idFila = rawPedidos[index].c[0]?.v; 
   
-  // URL de tu API de Sheety
-  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury/pedidos/${idFila}`;
+  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury%20(baseDeDatosApp)/pedidos/${idFila}`;
 
   try {
     const respuesta = await fetch(url, {
-      method: 'PATCH',
+      method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         pedido: {
-          estado: 'TERMINADO' // IMPORTANTE: La columna en Google Sheets debe llamarse 'estado'
+          estado: 'TERMINADO'
         }
       })
     });
 
     if (respuesta.ok) {
-      // Si Sheety actualizó correctamente la hoja, aplicamos la animación final
       btn.innerText = 'TERMINADO';
       btn.style.backgroundColor = '#ffe600';
       btn.style.color = '#060a12';
@@ -552,9 +547,8 @@ async function informarTerminado(index) {
       }, 5000); 
 
     } else {
-      // Si la API falla, mostramos un error pero no cerramos la tarjeta
       console.error("Error al actualizar:", await respuesta.text());
-      alert("Hubo un error al guardar en Google Sheets.");
+      alert("Error al guardar. Verificá que la URL y el método PUT sean correctos.");
       btn.innerText = 'Informar TERMINADO';
       btn.disabled = false;
     }
@@ -596,12 +590,10 @@ function imprimirPDF() {
     return;
   }
   
-  // 1. Preparar el contenedor espejo para la captura
   const now = new Date();
   const fecha = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getFullYear()).slice(-2)}`;
   const hora = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  // Creamos dinámicamente una estructura limpia solo para el PDF
   let htmlPDF = `
     <div style="font-family: 'Courier New', Courier, monospace; color: #000; padding: 20px;">
       <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
@@ -626,7 +618,6 @@ function imprimirPDF() {
 
   htmlPDF += `</div></div>`;
 
-  // 2. Usar un elemento temporal para el renderizado
   const divTemp = document.createElement('div');
   divTemp.innerHTML = htmlPDF;
   document.body.appendChild(divTemp);
@@ -639,7 +630,6 @@ function imprimirPDF() {
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   
-  // 3. Generar y limpiar
   html2pdf().set(opt).from(divTemp).save().then(() => {
     document.body.removeChild(divTemp);
   });

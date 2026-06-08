@@ -204,10 +204,6 @@
     letter-spacing: 0.05em;
     transition: all 0.1s ease;
   }
-  .btn-informar:disabled {
-    opacity: 0.7;
-    cursor: not-allowed;
-  }
   
   .card.titilar-terminado {
     animation: titilarLento 1s linear 5;
@@ -504,21 +500,21 @@ async function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
   
+  // ID de la fila (columna 1, índice 0)
+  const idFila = rawPedidos[index].c[0]?.v;
+  
+  // URL absoluta según tu configuración
+  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury/pedidos/${idFila}`;
+  
   btn.innerText = 'GUARDANDO...';
   btn.disabled = true;
-
-  const idFila = rawPedidos[index].c[0]?.v; 
-  
-  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury%20(baseDeDatosApp)/pedidos/${idFila}`;
 
   try {
     const respuesta = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        pedido: {
-          estado: 'TERMINADO'
-        }
+        pedido: { estado: 'TERMINADO' }
       })
     });
 
@@ -529,10 +525,6 @@ async function informarTerminado(index) {
       
       card.classList.add('titilar-terminado');
       
-      if (rawPedidos[index] && rawPedidos[index].c[6]) {
-        rawPedidos[index].c[6].v = 'TERMINADO';
-      }
-
       setTimeout(() => {
         card.style.display = 'none';
         seleccionados.delete(index);
@@ -544,16 +536,13 @@ async function informarTerminado(index) {
           renderizarPedidos();
           actualizarBotonTareas();
         }
-      }, 5000); 
-
+      }, 2000); 
     } else {
-      console.error("Error al actualizar:", await respuesta.text());
-      alert("Error al guardar. Verificá que la URL y el método PUT sean correctos.");
+      alert("Error en la API. Verifica permisos.");
       btn.innerText = 'Informar TERMINADO';
       btn.disabled = false;
     }
   } catch (error) {
-    console.error("Error de conexión:", error);
     alert("Error de conexión al guardar.");
     btn.innerText = 'Informar TERMINADO';
     btn.disabled = false;

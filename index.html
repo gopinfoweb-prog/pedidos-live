@@ -266,11 +266,11 @@
   <div id="viewTareas" class="view">
     <div id="printContainer" style="width: 100%;">
       
-      <div id="printHeader" style="display: none; justify-content: space-between; align-items: center; border-bottom: 2px solid #0ff5; padding-bottom: 15px; margin-bottom: 20px;">
+      <div id="printHeader" style="display: none; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 15px; margin-bottom: 20px;">
         <img src="logo_original-removebg-preview.png" style="height: 45px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,0.1));">
-        <div style="text-align: right; font-family: 'Share Tech Mono', monospace;">
-          <div id="printHeaderTitle" style="font-size: 16px; color: #00ffff; font-weight: bold; letter-spacing: 0.05em;">LISTA DE TAREAS</div>
-          <div id="printHeaderTime" style="font-size: 11px; color: #ffe600; margin-top: 4px; letter-spacing: 0.1em;">HORA: --:--</div>
+        <div style="text-align: right; font-family: 'Share Tech Mono', monospace; color: #000000;">
+          <div id="printHeaderTitle" style="font-size: 16px; font-weight: bold; letter-spacing: 0.05em;">LISTA DE TAREAS</div>
+          <div id="printHeaderTime" style="font-size: 11px; margin-top: 4px; letter-spacing: 0.1em;">--:--</div>
         </div>
       </div>
 
@@ -310,25 +310,9 @@ function parseGoogleDate(v) {
   return null;
 }
 
-const COLORES = {
-  'PENDIENTE':  '#ff3344',
-  'EN PROCESO': '#ff9500',
-  'TERMINADO':  '#ffe600',
-  'DESPACHADO': '#00cfff',
-  'RECIBIDO':   '#00e64d',
-};
-
+const COLORES = { 'PENDIENTE': '#ff3344', 'EN PROCESO': '#ff9500', 'TERMINADO': '#ffe600', 'DESPACHADO': '#00cfff', 'RECIBIDO': '#00e64d' };
 const BAR_PCT = { 'PENDIENTE':28, 'EN PROCESO':50, 'TERMINADO':65, 'DESPACHADO':80, 'RECIBIDO':100 };
-
-const TAG_BG = {
-  'PENDIENTE':  'rgba(255,51,68,0.12)',
-  'EN PROCESO': 'rgba(255,149,0,0.12)',
-  'TERMINADO':  'rgba(255,230,0,0.12)',
-  'DESPACHADO': 'rgba(0,207,255,0.12)',
-  'RECIBIDO':   'rgba(0,230,77,0.12)',
-};
-
-const UMBRAL_DIAS = 7;
+const TAG_BG = { 'PENDIENTE': 'rgba(255,51,68,0.12)', 'EN PROCESO': 'rgba(255,149,0,0.12)', 'TERMINADO': 'rgba(255,230,0,0.12)', 'DESPACHADO': 'rgba(0,207,255,0.12)', 'RECIBIDO': 'rgba(0,230,77,0.12)' };
 
 function estadoKey(e) { return (e||'').trim().toUpperCase(); }
 function cssKey(e) { return estadoKey(e).replace(/ /g,'-'); }
@@ -337,242 +321,79 @@ async function cargarTodo() {
   if (!enPedidos) return;
   document.getElementById('cards').innerHTML = '<div class="loading">CARGANDO DATOS...</div>';
   try {
-    const [rowsPedidos, rowsPrecios, rowsClientes] = await Promise.all([
-      fetchSheet('PEDIDOS'),
-      fetchSheet('PRECIOS DE LISTA'),
-      fetchSheet('CLIENTES'),
-    ]);
-
-    rawPedidos = rowsPedidos; 
-    seleccionados.clear();
-    actualizarBotonTareas();
-    actualizarBotonImprimir();
-
-    productos = {};
-    rowsPrecios.forEach(r => {
-      const id = r.c[0]?.v; const nombre = r.c[1]?.v;
-      if (id != null && nombre) productos[String(id)] = nombre;
-    });
-
-    clientes = {};
-    rowsClientes.forEach(r => {
-      const id = r.c[0]?.v; const nombre = r.c[1]?.v;
-      if (id && nombre) clientes[String(id)] = nombre;
-    });
-
+    const [rowsPedidos, rowsPrecios, rowsClientes] = await Promise.all([ fetchSheet('PEDIDOS'), fetchSheet('PRECIOS DE LISTA'), fetchSheet('CLIENTES') ]);
+    rawPedidos = rowsPedidos; seleccionados.clear();
+    productos = {}; rowsPrecios.forEach(r => { if(r.c[0]?.v != null) productos[String(r.c[0].v)] = r.c[1]?.v; });
+    clientes = {}; rowsClientes.forEach(r => { if(r.c[0]?.v != null) clientes[String(r.c[0].v)] = r.c[1]?.v; });
     renderizarPedidos();
-
-  } catch(e) {
-    document.getElementById('cards').innerHTML =
-      `<div class="error">// ERROR AL CARGAR DATOS<br>Verificá que las 3 hojas sean públicas<br><small style="color:#446688">${e.message}</small></div>`;
-  }
+    actualizarBotonTareas();
+  } catch(e) { document.getElementById('cards').innerHTML = `<div class="error">// ERROR AL CARGAR DATOS</div>`; }
 }
 
 function renderizarPedidos() {
-  if (!rawPedidos || rawPedidos.length === 0) {
-    document.getElementById('cards').innerHTML = '<div class="error">// SIN PEDIDOS REGISTRADOS</div>';
-    return;
-  }
-
   let html = '';
   rawPedidos.forEach((row, i) => {
-    const cols           = row.c;
-    const fechaRaw       = cols[1]?.v || null;
-    const clienteId      = String(cols[2]?.v || '');
-    const prodId         = String(cols[3]?.v || '');
-    const cantidad       = cols[4]?.v || '—';
-    const estadoRaw      = estadoKey(cols[6]?.v || 'PENDIENTE');
-    const fechaCierreRaw = cols[7]?.v || null;
-
-    const fechaObj    = parseGoogleDate(fechaRaw);
-    const fechaCierre = parseGoogleDate(fechaCierreRaw);
-
-    let dias;
-    if (estadoRaw === 'RECIBIDO') {
-      if (fechaCierre && fechaObj) {
-        const diff = Math.floor((fechaCierre - fechaObj) / (1000*60*60*24));
-        dias = diff >= 0 ? diff : 0;
-      } else if (fechaObj) {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        dias = Math.floor((hoy - fechaObj) / (1000*60*60*24));
-        if (dias < 0) dias = 0;
-      } else { dias = null; }
-    } else {
-      if (fechaObj) {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        dias = Math.floor((hoy - fechaObj) / (1000*60*60*24));
-        if (dias < 0) dias = 0;
-      } else { dias = null; }
-    }
-
-    const nombreProd = productos[prodId] || prodId;
-    const nombreCli  = clientes[clienteId] || clienteId;
-    const ck         = cssKey(estadoRaw);
-    const color      = COLORES[estadoRaw] || '#ff3344';
-    const pct        = BAR_PCT[estadoRaw] || 28;
-    const tagBg      = TAG_BG[estadoRaw] || 'rgba(255,51,68,0.12)';
-    const estadoLabel = estadoRaw.replace('EN PROCESO', 'EN&nbsp;PROCESO');
-
-    const diasNum    = (dias !== null) ? dias : '—';
-    const demasiado  = (dias !== null && dias > UMBRAL_DIAS);
-    const colorDias  = demasiado ? '#ff3344' : '#ffffff';
-
+    const cols = row.c; const estadoRaw = estadoKey(cols[6]?.v || 'PENDIENTE');
+    const nombreProd = productos[String(cols[3]?.v||'')] || cols[3]?.v;
     const isSelected = seleccionados.has(i) ? 'selected' : '';
-
-    const clockSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${colorDias}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 15.5 14.5"/></svg>`;
-
-    html += `
-    <div class="card ${ck} ${isSelected}" id="card-pedido-${i}" style="animation-delay:${i*0.08}s" onclick="toggleSeleccion(${i}, '${estadoRaw}')">
-      <div class="c tl"></div><div class="c tr"></div>
-      <div class="c bl"></div><div class="c br"></div>
+    html += `<div class="card ${cssKey(estadoRaw)} ${isSelected}" id="card-pedido-${i}" onclick="toggleSeleccion(${i}, '${estadoRaw}')">
+      <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
       <div class="card-inner">
-        <div class="card-top">
-          <div class="card-product">${nombreProd}</div>
-          <div class="card-qty">${cantidad} ud.</div>
-        </div>
-        <div class="card-client">&gt; ${nombreCli}</div>
-        <div class="card-mid">
-          <div class="bar-wrap">
-            <div class="bar-track">
-              <div class="bar-fill" style="width:${pct}%;background:${color};"></div>
-            </div>
-            <div class="bar-state-row">
-              <div class="estado-tag" style="left:${pct}%;color:${color};border-color:${color};background:${tagBg};">${estadoLabel}</div>
-            </div>
-          </div>
-          <div class="demora-box">
-            ${clockSVG}
-            <div class="demora-num" style="color:${colorDias};">${diasNum}</div>
-            <div class="demora-unit">DÍAS</div>
-          </div>
-        </div>
+        <div class="card-top"><div class="card-product">${nombreProd}</div><div class="card-qty">${cols[4]?.v||'—'} ud.</div></div>
+        <div class="card-client">&gt; ${clientes[String(cols[2]?.v||'')] || cols[2]?.v||''}</div>
       </div>
     </div>`;
   });
-
-  document.getElementById('cards').innerHTML = html;
+  document.getElementById('cards').innerHTML = html || '<div class="error">// SIN PEDIDOS</div>';
   actualizarFooter(rawPedidos.length);
 }
 
 function toggleSeleccion(index, estado) {
-  if (estado !== 'PENDIENTE') return; 
-
-  const cardElement = document.getElementById(`card-pedido-${index}`);
-  if (seleccionados.has(index)) {
-    seleccionados.delete(index);
-    cardElement.classList.remove('selected');
-  } else {
-    seleccionados.add(index);
-    cardElement.classList.add('selected');
-  }
+  if (estado !== 'PENDIENTE') return;
+  const card = document.getElementById(`card-pedido-${index}`);
+  seleccionados.has(index) ? seleccionados.delete(index) : seleccionados.add(index);
+  card.classList.toggle('selected');
   actualizarBotonTareas();
 }
 
-function actualizarBotonTareas() {
-  const btn = document.getElementById('btnCrearTareas');
-  btn.disabled = seleccionados.size === 0;
-}
-
-function actualizarBotonImprimir() {
-  const btnImprimir = document.getElementById('btnImprimir');
-  const containerTareas = document.getElementById('cardsTareas');
-  
-  if (containerTareas && containerTareas.querySelectorAll('.card:not([style*="display: none"])').length > 0) {
-    btnImprimir.disabled = false;
-  } else {
-    btnImprimir.disabled = true;
-  }
-}
+function actualizarBotonTareas() { document.getElementById('btnCrearTareas').disabled = seleccionados.size === 0; }
+function actualizarBotonImprimir() { document.getElementById('btnImprimir').disabled = document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0; }
 
 function crearTareasDiarias() {
-  seleccionados.forEach(index => {
-    if (rawPedidos[index] && rawPedidos[index].c[6]) {
-      rawPedidos[index].c[6].v = 'EN PROCESO';
-    }
-  });
-
-  const containerTareas = document.getElementById('cardsTareas');
-  containerTareas.innerHTML = '';
-
+  const container = document.getElementById('cardsTareas');
+  container.innerHTML = '';
   seleccionados.forEach(index => {
     const row = rawPedidos[index];
-    const prodId = String(row.c[3]?.v || '');
-    const cantidad = row.c[4]?.v || '—';
-    const nombreProd = productos[prodId] || prodId;
-
     const div = document.createElement('div');
     div.className = 'card EN-PROCESO';
     div.id = `card-tarea-${index}`;
-    div.innerHTML = `
-      <div class="c tl"></div><div class="c tr"></div>
-      <div class="c bl"></div><div class="c br"></div>
+    div.innerHTML = `<div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
       <div class="card-inner">
-        <div class="card-top" style="align-items: center;">
-          <div class="card-product" style="font-size:14px; color:#ffe600;">${nombreProd}</div>
-          <div class="card-qty">${cantidad} ud.</div>
-        </div>
-        <div style="margin-top: 15px; display:flex; justify-content: flex-end;">
-          <button class="btn-informar" id="btn-inf-${index}" onclick="informarTerminado(${index})">Informar TERMINADO</button>
-        </div>
-      </div>
-    `;
-    containerTareas.appendChild(div);
+        <div class="card-top"><div class="card-product" style="color:#ffe600">${productos[String(row.c[3]?.v||'')]||row.c[3]?.v}</div><div class="card-qty">${row.c[4]?.v||'—'} ud.</div></div>
+        <div style="margin-top:10px;text-align:right"><button class="btn-informar" id="btn-inf-${index}" onclick="informarTerminado(${index})">Informar TERMINADO</button></div>
+      </div>`;
+    container.appendChild(div);
   });
-
-  seleccionados.clear();
-  actualizarBotonTareas();
-  actualizarBotonImprimir();
-
   if(enPedidos) togglePantalla();
+  actualizarBotonImprimir();
 }
 
 function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
-  
-  btn.innerText = 'TERMINADO';
-  btn.style.backgroundColor = '#ffe600';
-  btn.style.color = '#060a12';
-  
+  btn.innerText = 'TERMINADO'; btn.style.background = '#ffe600'; btn.style.color = '#060a12';
   card.classList.add('titilar-terminado');
-  
-  if (rawPedidos[index] && rawPedidos[index].c[6]) {
-    rawPedidos[index].c[6].v = 'TERMINADO';
-  }
-
-  setTimeout(() => {
-    card.style.display = 'none';
-    seleccionados.delete(index);
-    actualizarBotonImprimir();
-    
-    if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
-      if(!enPedidos) togglePantalla();
-      seleccionados.clear();
-      renderizarPedidos();
-      actualizarBotonTareas();
-    }
-  }, 5000); 
+  setTimeout(() => { card.style.display = 'none'; actualizarBotonImprimir(); }, 5000);
 }
 
 function togglePantalla() {
   enPedidos = !enPedidos;
-  
   document.getElementById('viewPedidos').classList.toggle('active');
   document.getElementById('viewTareas').classList.toggle('active');
-  
   document.getElementById('pageTitle').innerText = enPedidos ? 'PEDIDOS' : 'TAREAS';
   document.getElementById('btnNavegar').innerText = enPedidos ? 'IR A TAREAS' : 'IR A PEDIDOS';
-  
-  document.getElementById('btnActualizar').disabled = !enPedidos;
   document.getElementById('footer').style.display = enPedidos ? 'block' : 'none';
-  
-  if(enPedidos) {
-    seleccionados.clear();
-    renderizarPedidos();
-    actualizarBotonTareas();
-  }
-  
-  actualizarBotonImprimir();
+  if(enPedidos) { seleccionados.clear(); cargarTodo(); }
 }
 
 function imprimirPDF() {
@@ -585,8 +406,7 @@ function imprimirPDF() {
   const printHeader = document.getElementById('printHeader');
   const printTitle = document.getElementById('printHeaderTitle');
   const printTime = document.getElementById('printHeaderTime');
-  const printContainer = document.getElementById('printContainer');
-
+  
   const now = new Date();
   const dia = String(now.getDate()).padStart(2, '0');
   const mes = String(now.getMonth() + 1).padStart(2, '0');
@@ -594,74 +414,43 @@ function imprimirPDF() {
   const horas = String(now.getHours()).padStart(2, '0');
   const minutos = String(now.getMinutes()).padStart(2, '0');
 
-  // Actualizamos el encabezado
+  // Aplicamos colores negros para PDF
+  printTitle.style.color = '#000000';
   printTitle.innerText = `LISTA DE TAREAS DEL ${dia}/${mes}/${anio}`;
-  printTime.innerText = `HORA DE IMPRESIÓN: ${horas}:${minutos}`;
-
-  // Mostramos el encabezado integrado a la app
+  printTime.style.color = '#000000';
+  printTime.innerText = `${horas}:${minutos}`;
   printHeader.style.display = 'flex';
-
+  
   const opt = {
-    margin:       [10, 10, 15, 10], // top, left, bottom, right
-    filename:     `tareas_diarias_${dia}${mes}${anio}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { 
-      scale: 2, 
-      useCORS: true, 
-      backgroundColor: '#060a12' 
-    },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    margin: [10, 10, 15, 10], filename: `tareas_${dia}${mes}${anio}.pdf`,
+    html2canvas: { scale: 2, backgroundColor: '#ffffff' },
+    jsPDF: { unit: 'mm', format: 'a4' }
   };
   
-  html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
-    const totalPages = pdf.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFont('courier', 'bold');
-      pdf.setFontSize(10);
-      pdf.setTextColor(0, 255, 255); 
-      
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const textoFooter = `HOJA ${i} DE ${totalPages}`;
-      
-      const textWidth = pdf.getStringUnitWidth(textoFooter) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
-      const xPos = (pageWidth - textWidth) / 2;
-      
-      pdf.text(textoFooter, xPos, pageHeight - 8);
+  html2pdf().set(opt).from(document.getElementById('printContainer')).toPdf().get('pdf').then(pdf => {
+    const total = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= total; i++) {
+      pdf.setPage(i); pdf.setTextColor(0, 0, 0);
+      pdf.text(`HOJA ${i} DE ${total}`, (pdf.internal.pageSize.getWidth()/2)-10, pdf.internal.pageSize.getHeight()-8);
     }
-  }).save().then(() => {
-    // Escondemos el encabezado nuevamente
-    printHeader.style.display = 'none';
-  }).catch(err => {
-    printHeader.style.display = 'none';
-    console.error("Error al generar PDF:", err);
+  }).save().then(() => { 
+    printHeader.style.display = 'none'; 
+    printTitle.style.color = '#00ffff'; 
+    printTime.style.color = '#ffe600';
   });
 }
 
-function actualizarFooter(totalRegistros) {
-  const now = new Date();
-  document.getElementById('footer').textContent =
-    `// SYNC ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} · ${totalRegistros} REGISTROS`;
+function actualizarFooter(total) {
+  const n = new Date();
+  document.getElementById('footer').textContent = `// SYNC ${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')} · ${total} REGISTROS`;
 }
 
+setInterval(() => { if(enPedidos) tick(); }, 1000);
 function tick() {
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-  
-  const dia = String(now.getDate()).padStart(2, '0');
-  const mes = String(now.getMonth() + 1).padStart(2, '0');
-  const anio = String(now.getFullYear()).slice(-2);
-  document.getElementById('date').textContent = `${dia}/${mes}/${anio}`;
+  const n = new Date();
+  document.getElementById('clock').textContent = `${n.getHours().toString().padStart(2,'0')}:${n.getMinutes().toString().padStart(2,'0')}:${n.getSeconds().toString().padStart(2,'0')}`;
+  document.getElementById('date').textContent = `${n.getDate().toString().padStart(2,'0')}/${(n.getMonth()+1).toString().padStart(2,'0')}/${n.getFullYear().toString().slice(-2)}`;
 }
-
-tick();
-setInterval(tick, 1000);
-setInterval(() => {
-  if (enPedidos) { cargarTodo(); }
-}, 60000);
-
 cargarTodo();
 </script>
 </body>

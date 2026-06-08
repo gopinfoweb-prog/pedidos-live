@@ -230,42 +230,9 @@
     text-align:center; font-size:13px; color:#7ecfff;
     letter-spacing:0.12em; margin-top:10px; display: block;
   }
-
-  /* --- CONTENEDOR NUEVO PARA GENERAR EL PDF NITIDO (Oculto en app) --- */
-  #seccionExportarPDF {
-    display: none;
-    background: #ffffff;
-    color: #000000;
-    padding: 20px;
-    font-family: 'Share Tech Mono', monospace;
-  }
-  .pdf-header {
-    display: flex; justify-content: space-between; align-items: center;
-    border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 20px;
-  }
-  .pdf-title { font-size: 18px; font-weight: bold; color: #000000; letter-spacing: 0.05em; }
-  .pdf-time { font-size: 11px; color: #333333; text-align: right; }
-  .pdf-row {
-    display: flex; align-items: center; border-bottom: 1px solid #cccccc;
-    padding: 12px 5px; font-size: 14px; color: #000000;
-  }
-  .pdf-checkbox {
-    width: 16px; height: 16px; border: 2px solid #000000;
-    margin-right: 15px; background: #ffffff; flex-shrink: 0;
-  }
-  .pdf-qty { font-weight: bold; margin-right: 20px; min-width: 60px; }
-  .pdf-product { flex: 1; text-transform: uppercase; }
 </style>
 </head>
 <body>
-
-<div id="seccionExportarPDF">
-  <div class="pdf-header">
-    <div class="pdf-title" id="pdfMetaTitulo">LISTA DE TAREAS</div>
-    <div class="pdf-time" id="pdfMetaHora">HORA: --:--</div>
-  </div>
-  <div id="pdfListaItems"></div>
-</div>
 
 <div class="container">
   <div class="header">
@@ -511,8 +478,8 @@ function crearTareasDiarias() {
       <div class="c bl"></div><div class="c br"></div>
       <div class="card-inner">
         <div class="card-top" style="align-items: center;">
-          <div class="card-product" style="font-size:14px; color:#ffe600;" data-prod="${nombreProd}">${nombreProd}</div>
-          <div class="card-qty" data-qty="${cantidad}">${cantidad} ud.</div>
+          <div class="card-product" style="font-size:14px; color:#ffe600;">${nombreProd}</div>
+          <div class="card-qty">${cantidad} ud.</div>
         </div>
         <div style="margin-top: 15px; display:flex; justify-content: flex-end;">
           <button class="btn-informar" id="btn-inf-${index}" onclick="informarTerminado(${index})">Informar TERMINADO</button>
@@ -578,80 +545,61 @@ function togglePantalla() {
   actualizarBotonImprimir();
 }
 
-/* --- EXPORTACIÓN AUTOMÁTICA ULTRA LIMPIA CON HTML2PDF --- */
 function imprimirPDF() {
   const containerTareas = document.getElementById('cardsTareas');
   const tareasActivas = containerTareas ? containerTareas.querySelectorAll('.card:not([style*="display: none"])') : [];
   
   if(tareasActivas.length === 0) {
-    alert('No hay tareas activas para exportar.');
+    alert('No hay tareas para imprimir.');
     return;
   }
   
+  // 1. Preparar el contenedor espejo para la captura
   const now = new Date();
-  const dia = String(now.getDate()).padStart(2, '0');
-  const mes = String(now.getMonth() + 1).padStart(2, '0');
-  const anio = String(now.getFullYear()).slice(-2);
-  const horas = String(now.getHours()).padStart(2, '0');
-  const minutos = String(now.getMinutes()).padStart(2, '0');
+  const fecha = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getFullYear()).slice(-2)}`;
+  const hora = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  // Cargamos textos en el clon limpio
-  document.getElementById('pdfMetaTitulo').innerText = `LISTA DE TAREAS DEL ${dia}/${mes}/${anio}`;
-  document.getElementById('pdfMetaHora').innerText = `GENERADO A LAS: ${horas}:${minutos}`;
+  // Creamos dinámicamente una estructura limpia solo para el PDF
+  let htmlPDF = `
+    <div style="font-family: 'Courier New', Courier, monospace; color: #000; padding: 20px;">
+      <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+        <div style="font-weight: bold; font-size: 18px;">LISTA DE TAREAS DEL ${fecha}</div>
+        <div style="font-size: 14px;">${hora}</div>
+      </div>
+      <div>
+  `;
 
-  let htmlAcumulado = '';
   tareasActivas.forEach(card => {
-    const elProd = card.querySelector('[data-prod]');
-    const elQty = card.querySelector('[data-qty]');
+    const producto = card.querySelector('.card-product').innerText;
+    const cantidad = card.querySelector('.card-qty').innerText;
     
-    const producto = elProd ? elProd.getAttribute('data-prod') : 'Producto';
-    const cantidad = elQty ? elQty.getAttribute('data-qty') : '0';
-    
-    htmlAcumulado += `
-      <div class="pdf-row">
-        <div class="pdf-checkbox"></div>
-        <div class="pdf-qty">${cantidad} ud.</div>
-        <div class="pdf-product">${producto}</div>
+    htmlPDF += `
+      <div style="display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
+        <div style="min-width: 80px; font-weight: bold;">${cantidad}</div>
+        <div style="flex-grow: 1;">${producto}</div>
+        <div style="width: 20px; height: 20px; border: 2px solid #000;"></div>
       </div>
     `;
   });
 
-  const contenedorPDF = document.getElementById('seccionExportarPDF');
-  document.getElementById('pdfListaItems').innerHTML = htmlAcumulado;
+  htmlPDF += `</div></div>`;
 
-  // Hacemos el contenedor visible temporalmente para que html2pdf lo capture perfecto
-  contenedorPDF.style.display = 'block';
+  // 2. Usar un elemento temporal para el renderizado
+  const divTemp = document.createElement('div');
+  divTemp.innerHTML = htmlPDF;
+  document.body.appendChild(divTemp);
 
   const opt = {
-    margin:       [12, 12, 15, 12],
-    filename:     `tareas_${dia}_${mes}_${anio}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#ffffff' },
+    margin:       15,
+    filename:     `lista_tareas_${fecha.replace(/\//g, '-')}.pdf`,
+    image:        { type: 'jpeg', quality: 1 },
+    html2canvas:  { scale: 2 },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   
-  html2pdf().set(opt).from(contenedorPDF).toPdf().get('pdf').then(function(pdf) {
-    const totalPages = pdf.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFont('courier', 'normal');
-      pdf.setFontSize(9);
-      pdf.setTextColor(100, 100, 100);
-      
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const textoFooter = `PAGINA ${i} DE ${totalPages}`;
-      
-      const textWidth = pdf.getStringUnitWidth(textoFooter) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
-      const xPos = (pageWidth - textWidth) / 2;
-      pdf.text(textoFooter, xPos, pageHeight - 8);
-    }
-  }).save().then(() => {
-    // Volvemos a ocultar el contenedor espejo en la app
-    contenedorPDF.style.display = 'none';
-  }).catch(err => {
-    contenedorPDF.style.display = 'none';
-    console.error("Error generating PDF:", err);
+  // 3. Generar y limpiar
+  html2pdf().set(opt).from(divTemp).save().then(() => {
+    document.body.removeChild(divTemp);
   });
 }
 

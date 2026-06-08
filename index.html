@@ -14,6 +14,8 @@
     color: #c8e8ff;
     min-height: 100vh;
     overflow-x: hidden;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   body::before {
     content: '';
@@ -118,6 +120,8 @@
     position: relative; overflow: visible;
     animation: fadeIn 0.4s ease both;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
   }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
@@ -461,7 +465,6 @@ function actualizarBotonImprimir() {
   const btnImprimir = document.getElementById('btnImprimir');
   const containerTareas = document.getElementById('cardsTareas');
   
-  // Se habilita solo si hay elementos de tipo card dentro del panel de tareas
   if (containerTareas && containerTareas.querySelectorAll('.card').length > 0) {
     btnImprimir.disabled = false;
   } else {
@@ -504,7 +507,6 @@ function crearTareasDiarias() {
     containerTareas.appendChild(div);
   });
 
-  // Limpiar seleccionados y deshabilitar botón antes de saltar de pantalla
   seleccionados.clear();
   actualizarBotonTareas();
   actualizarBotonImprimir();
@@ -527,7 +529,7 @@ function informarTerminado(index) {
   }
 
   setTimeout(() => {
-    card.remove(); // Remueve el elemento directamente del DOM
+    card.remove(); 
     actualizarBotonImprimir();
     
     if (document.querySelectorAll('#cardsTareas .card').length === 0) {
@@ -540,18 +542,13 @@ function informarTerminado(index) {
 function togglePantalla() {
   enPedidos = !enPedidos;
   
-  // Cambiar vistas
   document.getElementById('viewPedidos').classList.toggle('active');
   document.getElementById('viewTareas').classList.toggle('active');
   
-  // Ajustar textos
   document.getElementById('pageTitle').innerText = enPedidos ? 'PEDIDOS' : 'TAREAS';
   document.getElementById('btnNavegar').innerText = enPedidos ? 'IR A TAREAS' : 'IR A PEDIDOS';
   
-  // Lógica del botón Actualizar: deshabilitado en TAREAS
   document.getElementById('btnActualizar').disabled = !enPedidos;
-  
-  // Lógica del footer: ocultar en TAREAS
   document.getElementById('footer').style.display = enPedidos ? 'block' : 'none';
   
   if(enPedidos) {
@@ -560,7 +557,6 @@ function togglePantalla() {
     actualizarBotonTareas();
   }
   
-  // Sincronizar estado del botón imprimir al cambiar de panel
   actualizarBotonImprimir();
 }
 
@@ -572,10 +568,14 @@ function imprimirPDF() {
   }
   
   const opt = {
-    margin:       10,
+    margin:       12,
     filename:     'tareas_diarias.pdf',
     image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#060a12' },
+    html2canvas:  { 
+      scale: 2, 
+      useCORS: true, 
+      backgroundColor: '#060a12' // Fuerza el color de fondo exacto oscuro en la captura del canvas
+    },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   

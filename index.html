@@ -20,7 +20,7 @@
   body::before {
     content: '';
     position: fixed; inset: 0;
-    background-image: radial-gradient(circle, rgba(0, 255, 255, 0.06) 1px, transparent 1px);
+    background-image: radial-gradient(circle, #0ff1 1px, transparent 1px);
     background-size: 28px 28px;
     pointer-events: none; z-index: 0;
   }
@@ -34,7 +34,7 @@
   .header {
     display: flex; align-items: center; justify-content: space-between;
     margin-bottom: 10px; padding-bottom: 10px;
-    border-bottom: 1px solid rgba(0, 255, 255, 0.13);
+    border-bottom: 1px solid #0ff2;
   }
   .logo-img {
     height: 56px; width: auto; display: block;
@@ -47,18 +47,18 @@
   }
   .live-badge {
     display: flex; align-items: center; gap: 7px;
-    font-size: 11px; color: #00ff00; letter-spacing: 0.15em; font-weight: bold;
+    font-size: 11px; color: #0f0; letter-spacing: 0.15em; font-weight: bold;
   }
   .live-dot {
-    width: 9px; height: 9px; border-radius: 50%; background: #00ff00;
+    width: 9px; height: 9px; border-radius: 50%; background: #0f0;
     animation: pulse 2.4s ease-in-out infinite;
   }
   @keyframes pulse {
-    0%   { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.5); }
-    45%  { opacity: 1; box-shadow: 0 0 0 6px rgba(0, 255, 0, 0); }
-    50%  { opacity: 0; box-shadow: 0 0 0 0 rgba(0, 255, 0, 0); }
+    0%   { opacity: 1; box-shadow: 0 0 0 0 #0f08; }
+    45%  { opacity: 1; box-shadow: 0 0 0 6px #0f000; }
+    50%  { opacity: 0; box-shadow: 0 0 0 0 #0f000; }
     55%  { opacity: 0; }
-    100% { opacity: 1; box-shadow: 0 0 0 0 rgba(0, 255, 0, 0.5); }
+    100% { opacity: 1; box-shadow: 0 0 0 0 #0f08; }
   }
   .clock { font-size: 13px; color: #7ecfff; letter-spacing: 0.12em; margin-top: 2px;}
   .date { font-size: 11px; color: #5588aa; letter-spacing: 0.15em; }
@@ -115,7 +115,7 @@
   .view.active { display: block; }
 
   .card {
-    background: #0a0f1c; border: 1px solid rgba(0, 255, 255, 0.13);
+    background: #0a0f1c; border: 1px solid #0ff2;
     border-radius: 4px; margin-bottom: 10px;
     position: relative; overflow: visible;
     animation: fadeIn 0.4s ease both;
@@ -146,21 +146,18 @@
   }
 
   .c { position: absolute; width: 8px; height: 8px; }
-  .tl { top:0;left:0; border-top:1px solid rgba(0,255,255,0.33); border-left:1px solid rgba(0,255,255,0.33); }
-  .tr { top:0;right:0; border-top:1px solid rgba(0,255,255,0.33); border-right:1px solid rgba(0,255,255,0.33); }
-  .bl { bottom:0;left:0; border-bottom:1px solid rgba(0,255,255,0.33); border-left:1px solid rgba(0,255,255,0.33); }
-  .br { bottom:0;right:0; border-bottom:1px solid rgba(0,255,255,0.33); border-right:1px solid rgba(0,255,255,0.33); }
-  
+  .tl { top:0;left:0; border-top:1px solid #0ff5; border-left:1px solid #0ff5; }
+  .tr { top:0;right:0; border-top:1px solid #0ff5; border-right:1px solid #0ff5; }
+  .bl { bottom:0;left:0; border-bottom:1px solid #0ff5; border-left:1px solid #0ff5; }
+  .br { bottom:0;right:0; border-bottom:1px solid #0ff5; border-right:1px solid #0ff5; }
   .card-inner { padding: 12px 14px 12px 17px; }
   .card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
   .card-product { font-size:13px; color:#d8f0ff; letter-spacing:0.04em; line-height:1.3; flex:1; min-width:0; }
-  
   .card-qty {
-    font-size:11px; color:#00ffff; letter-spacing:0.08em;
-    background:rgba(0, 255, 255, 0.06); border:1px solid rgba(0, 255, 255, 0.2);
+    font-size:11px; color:#0ff; letter-spacing:0.08em;
+    background:#0ff1; border:1px solid #0ff3;
     padding:3px 9px; border-radius:2px; flex-shrink:0; white-space:nowrap;
   }
-  
   .card-client { font-size:12px; color:#5588aa; margin-top:4px; letter-spacing:0.05em; }
   .card-mid { display:flex; align-items:center; margin-top:12px; gap:12px; }
   .bar-wrap { flex:1; min-width:0; }
@@ -200,7 +197,7 @@
   
   .btn-informar {
     background: #556677;
-    color: #ffffff;
+    color: #fff;
     border: none;
     font-family: 'Share Tech Mono', monospace;
     font-size: 11px;
@@ -226,13 +223,14 @@
   }
 
   .loading {
-    text-align:center; color:rgba(0, 255, 255, 0.4); font-size:13px;
+    text-align:center; color:#0ff6; font-size:13px;
     letter-spacing:0.15em; padding:40px 0;
     animation: blink2 1s infinite;
   }
   @keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
   .error { text-align:center; color:#ff3344; font-size:12px; padding:30px 12px; letter-spacing:0.08em; line-height:1.8; }
   
+  /* Footer ocultable */
   .footer {
     text-align:center; font-size:13px; color:#7ecfff;
     letter-spacing:0.12em; margin-top:10px; display: block;
@@ -266,18 +264,8 @@
   </div>
 
   <div id="viewTareas" class="view">
-    <div id="printContainer" style="width: 100%; transition: background-color 0.1s;">
-      
-      <div id="printHeader" style="display: none; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 15px; margin-bottom: 20px;">
-        <img src="logo_original-removebg-preview.png" style="height: 45px; object-fit: contain;">
-        <div style="text-align: right; font-family: 'Share Tech Mono', monospace;">
-          <div id="printHeaderTitle" style="font-size: 16px; color: #000000; font-weight: bold; letter-spacing: 0.05em;">LISTA DE TAREAS</div>
-          <div id="printHeaderTime" style="font-size: 11px; color: #000000; margin-top: 4px; letter-spacing: 0.1em;">HORA: --:--</div>
-        </div>
-      </div>
-
+    <div id="printContainer" style="width: 100%;">
       <div id="cardsTareas"></div>
-
     </div>
   </div>
 
@@ -505,15 +493,12 @@ function crearTareasDiarias() {
     const div = document.createElement('div');
     div.className = 'card EN-PROCESO';
     div.id = `card-tarea-${index}`;
-    // EL BLINDAJE EXTRA: box-shadow interno obliga al motor a pintar oscuro el fondo pase lo que pase
-    div.style.cssText = "background-color: #0a0f1c !important; box-shadow: inset 0 0 0 1000px #0a0f1c !important;";
-    
     div.innerHTML = `
       <div class="c tl"></div><div class="c tr"></div>
       <div class="c bl"></div><div class="c br"></div>
       <div class="card-inner">
         <div class="card-top" style="align-items: center;">
-          <div class="card-product" style="font-size:14px; color:#ffe600; font-weight:bold;">${nombreProd}</div>
+          <div class="card-product" style="font-size:14px; color:#ffe600;">${nombreProd}</div>
           <div class="card-qty">${cantidad} ud.</div>
         </div>
         <div style="margin-top: 15px; display:flex; justify-content: flex-end;">
@@ -536,8 +521,8 @@ function informarTerminado(index) {
   const card = document.getElementById(`card-tarea-${index}`);
   
   btn.innerText = 'TERMINADO';
-  btn.style.setProperty('background-color', '#ffe600', 'important');
-  btn.style.setProperty('color', '#060a12', 'important');
+  btn.style.backgroundColor = '#ffe600';
+  btn.style.color = '#060a12';
   
   card.classList.add('titilar-terminado');
   
@@ -582,16 +567,13 @@ function togglePantalla() {
 
 function imprimirPDF() {
   const containerTareas = document.getElementById('cardsTareas');
-  if(!containerTareas || containerTareas.querySelectorAll('.card:not([style*="display: none"])').length === 0) {
+  const tareasActivas = containerTareas ? containerTareas.querySelectorAll('.card:not([style*="display: none"])') : [];
+  
+  if(tareasActivas.length === 0) {
     alert('No hay tareas para imprimir.');
     return;
   }
   
-  const printHeader = document.getElementById('printHeader');
-  const printTitle = document.getElementById('printHeaderTitle');
-  const printTime = document.getElementById('printHeaderTime');
-  const printContainer = document.getElementById('printContainer');
-
   const now = new Date();
   const dia = String(now.getDate()).padStart(2, '0');
   const mes = String(now.getMonth() + 1).padStart(2, '0');
@@ -599,38 +581,66 @@ function imprimirPDF() {
   const horas = String(now.getHours()).padStart(2, '0');
   const minutos = String(now.getMinutes()).padStart(2, '0');
 
-  printTitle.innerText = `LISTA DE TAREAS DEL ${dia}/${mes}/${anio}`;
-  printTime.innerText = `HORA: ${horas}:${minutos}`;
-  printHeader.style.display = 'flex';
+  // Creamos un contenedor limpio off-screen exclusivo para estructurar el PDF
+  const tempPdfContainer = document.createElement('div');
+  tempPdfContainer.style.position = 'absolute';
+  tempPdfContainer.style.left = '-9999px';
+  tempPdfContainer.style.top = '0';
+  tempPdfContainer.style.width = '175mm'; 
+  tempPdfContainer.style.background = '#ffffff';
+  tempPdfContainer.style.color = '#000000';
+  tempPdfContainer.style.padding = '10px';
+  tempPdfContainer.style.fontFamily = "'Share Tech Mono', monospace";
 
-  // EL TRUCO DEL CONTENEDOR BLANCO: Forzamos la hoja a ser blanca solo durante la impresión.
-  const originalBg = printContainer.style.backgroundColor;
-  const originalMinHeight = printContainer.style.minHeight;
-  const originalPadding = printContainer.style.padding;
-  
-  printContainer.style.backgroundColor = '#ffffff';
-  printContainer.style.minHeight = '1122px'; // Altura aproximada de A4 para no cortar oscuro
-  printContainer.style.padding = '15px 15px 40px 15px'; // Los márgenes se los damos al div internamente
+  // Armamos el encabezado limpio (Texto Negro + Línea divisoria Negra)
+  let htmlContenido = `
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 20px;">
+      <img src="logo_original-removebg-preview.png" style="height: 45px; object-fit: contain;">
+      <div style="text-align: right; color: #000000;">
+        <div style="font-size: 16px; font-weight: bold; letter-spacing: 0.05em;">LISTA DE TAREAS DEL ${dia}/${mes}/${anio}</div>
+        <div style="font-size: 11px; margin-top: 4px; letter-spacing: 0.1em;">HORA DE IMPRESIÓN: ${horas}:${minutos}</div>
+      </div>
+    </div>
+    <div style="display: flex; flex-direction: column; gap: 0;">
+  `;
+
+  // Mapeamos las tareas de la pantalla a un formato de lista simple con caja para tilde
+  tareasActivas.forEach(card => {
+    const producto = card.querySelector('.card-product').innerText;
+    const cantidad = card.querySelector('.card-qty').innerText;
+    
+    htmlContenido += `
+      <div style="display: flex; align-items: center; border-bottom: 1px solid #000000; padding: 12px 5px; color: #000000; font-size: 14px;">
+        <div style="width: 18px; height: 18px; border: 2px solid #000000; margin-right: 15px; flex-shrink: 0; background: #ffffff;"></div>
+        <div style="font-weight: bold; margin-right: 20px; min-width: 65px; white-space: nowrap;">${cantidad}</div>
+        <div style="flex: 1; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.2;">${producto}</div>
+      </div>
+    `;
+  });
+
+  htmlContenido += `</div>`;
+  tempPdfContainer.innerHTML = htmlContenido;
+  document.body.appendChild(tempPdfContainer);
 
   const opt = {
-    margin:       0, // Quitamos márgenes acá para que no se filtre el fondo oscuro
+    margin:       [12, 12, 15, 12],
     filename:     `tareas_diarias_${dia}${mes}${anio}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { 
       scale: 2, 
       useCORS: true, 
-      backgroundColor: '#060a12' // LA CLAVE QUE APRENDIMOS: base oscura para no lavar tarjetas
+      backgroundColor: '#ffffff'
     },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   
-  html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
+  html2pdf().set(opt).from(tempPdfContainer).toPdf().get('pdf').then(function(pdf) {
     const totalPages = pdf.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
       pdf.setFont('courier', 'bold');
       pdf.setFontSize(10);
-      pdf.setTextColor(0, 0, 0); 
+      pdf.setTextColor(0, 0, 0); // Número de página en negro absoluto
       
       const pageWidth = pdf.internal.pageSize.getWidth();
       const pageHeight = pdf.internal.pageSize.getHeight();
@@ -642,16 +652,11 @@ function imprimirPDF() {
       pdf.text(textoFooter, xPos, pageHeight - 8);
     }
   }).save().then(() => {
-    // Restauramos todo a la normalidad para la app
-    printHeader.style.display = 'none';
-    printContainer.style.backgroundColor = originalBg;
-    printContainer.style.minHeight = originalMinHeight;
-    printContainer.style.padding = originalPadding;
+    document.body.removeChild(tempPdfContainer);
   }).catch(err => {
-    printHeader.style.display = 'none';
-    printContainer.style.backgroundColor = originalBg;
-    printContainer.style.minHeight = originalMinHeight;
-    printContainer.style.padding = originalPadding;
+    if (tempPdfContainer.parentNode) {
+      document.body.removeChild(tempPdfContainer);
+    }
     console.error("Error al generar PDF:", err);
   });
 }

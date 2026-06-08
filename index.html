@@ -496,54 +496,49 @@ function crearTareasDiarias() {
   if(enPedidos) togglePantalla();
 }
 
+// CORRECCIÓN AQUÍ: Petición real PUT a Sheety
 async function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
   
-  // ID de la fila (columna 1, índice 0)
+  // Usamos el ID de la fila (asumiendo que está en la primera columna, índice 0)
   const idFila = rawPedidos[index].c[0]?.v;
-  
-  // URL absoluta según tu configuración
   const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury/pedidos/${idFila}`;
   
   btn.innerText = 'GUARDANDO...';
   btn.disabled = true;
-
+  
   try {
-    const respuesta = await fetch(url, {
+    const response = await fetch(url, {
       method: 'PUT',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         pedido: { estado: 'TERMINADO' }
       })
     });
-
-    if (respuesta.ok) {
+    
+    if (response.ok) {
       btn.innerText = 'TERMINADO';
       btn.style.backgroundColor = '#ffe600';
       btn.style.color = '#060a12';
-      
       card.classList.add('titilar-terminado');
       
       setTimeout(() => {
         card.style.display = 'none';
         seleccionados.delete(index);
         actualizarBotonImprimir();
-        
         if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
           if(!enPedidos) togglePantalla();
           seleccionados.clear();
           renderizarPedidos();
           actualizarBotonTareas();
         }
-      }, 2000); 
+      }, 2000);
     } else {
-      alert("Error en la API. Verifica permisos.");
-      btn.innerText = 'Informar TERMINADO';
-      btn.disabled = false;
+      throw new Error('Error en API');
     }
-  } catch (error) {
-    alert("Error de conexión al guardar.");
+  } catch (err) {
+    alert("Error al guardar. Verificá que la URL y el método PUT sean correctos en Sheety.");
     btn.innerText = 'Informar TERMINADO';
     btn.disabled = false;
   }

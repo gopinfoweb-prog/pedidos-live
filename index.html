@@ -8,133 +8,37 @@
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    background: #060a12;
-    font-family: 'Share Tech Mono', monospace;
-    color: #c8e8ff;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background-image: radial-gradient(circle, #0ff1 1px, transparent 1px);
-    background-size: 28px 28px;
-    pointer-events: none; z-index: 0;
-  }
-  .container {
-    position: relative; z-index: 2;
-    padding: 16px 12px 24px;
-    max-width: 480px; margin: 0 auto;
-  }
-  
-  /* --- HEADER & TITLES --- */
-  .header {
-    display: flex; align-items: center; justify-content: space-between;
-    margin-bottom: 10px; padding-bottom: 10px;
-    border-bottom: 1px solid #0ff2;
-  }
-  .logo-img {
-    height: 56px; width: auto; display: block;
-    object-fit: contain;
-    border-radius: 4px;
-  }
-  .header-info {
-    display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
-  }
-  .live-badge {
-    display: flex; align-items: center; gap: 7px;
-    font-size: 11px; color: #0f0; letter-spacing: 0.15em; font-weight: bold;
-  }
-  .live-dot {
-    width: 9px; height: 9px; border-radius: 50%; background: #0f0;
-    animation: pulse 2.4s ease-in-out infinite;
-  }
-  @keyframes pulse {
-    0%   { opacity: 1; box-shadow: 0 0 0 0 #0f08; }
-    45%  { opacity: 1; box-shadow: 0 0 0 6px #0f000; }
-    50%  { opacity: 0; box-shadow: 0 0 0 0 #0f000; }
-    55%  { opacity: 0; }
-    100% { opacity: 1; box-shadow: 0 0 0 0 #0f08; }
-  }
-  .clock { font-size: 13px; color: #7ecfff; letter-spacing: 0.12em; margin-top: 2px;}
+  body { background: #060a12; font-family: 'Share Tech Mono', monospace; color: #c8e8ff; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background-image: radial-gradient(circle, #0ff1 1px, transparent 1px); background-size: 28px 28px; pointer-events: none; z-index: 0; }
+  .container { position: relative; z-index: 2; padding: 16px 12px 24px; max-width: 480px; margin: 0 auto; }
+  .header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 18px; padding-bottom: 10px; border-bottom: 1px solid #0ff2; }
+  .logo-img { height: 56px; width: auto; display: block; object-fit: contain; border-radius: 4px; }
+  .header-info { display: flex; flex-direction: column; align-items: flex-end; gap: 4px; }
+  .live-badge { display: flex; align-items: center; gap: 7px; font-size: 11px; color: #0f0; letter-spacing: 0.15em; font-weight: bold; }
+  .live-dot { width: 9px; height: 9px; border-radius: 50%; background: #0f0; animation: pulse 2.4s ease-in-out infinite; }
+  @keyframes pulse { 0% { opacity: 1; box-shadow: 0 0 0 0 #0f08; } 50% { opacity: 0; box-shadow: 0 0 0 6px #0f000; } 100% { opacity: 1; box-shadow: 0 0 0 0 #0f08; } }
+  .clock { font-size: 13px; color: #7ecfff; letter-spacing: 0.12em; margin-top: 2px; }
   .date { font-size: 11px; color: #5588aa; letter-spacing: 0.15em; }
   
-  /* --- BARRA DE BOTONES FIJA (MODIFICADA) --- */
-  .top-bar {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    background: #060a12;
-    padding-top: 10px;
-    margin-bottom: 15px;
-  }
-  .page-title {
-    font-size: 18px;
-    color: #00ffff;
-    letter-spacing: 0.15em;
-    margin-bottom: 10px;
-    text-transform: uppercase;
-  }
-  .button-bar {
-    display: flex;
-    border: 2px solid #ffe600;
-    background: #0a0f1c;
-  }
-  .button-bar button {
-    flex: 1;
-    background: transparent;
-    color: #ffe600;
-    border: none;
-    border-right: 2px solid #ffe600;
-    font-family: 'Share Tech Mono', monospace;
-    font-weight: bold;
-    font-size: 11px;
-    padding: 10px 2px;
-    cursor: pointer;
-    letter-spacing: 0.05em;
-  }
-  .button-bar button:last-child {
-    border-right: none;
-  }
-  .button-bar button:disabled {
-    color: #556677;
-    cursor: not-allowed;
-  }
+  .top-bar { position: sticky; top: 0; z-index: 100; background: #060a12; padding-top: 10px; margin-bottom: 15px; }
+  .page-title { font-size: 18px; color: #00ffff; letter-spacing: 0.15em; margin-bottom: 10px; text-transform: uppercase; }
+  .button-bar { display: flex; border: 2px solid #ffe600; background: #0a0f1c; }
+  .button-bar button { flex: 1; background: transparent; color: #ffe600; border: none; border-right: 2px solid #ffe600; font-family: 'Share Tech Mono', monospace; font-weight: bold; font-size: 11px; padding: 10px 2px; cursor: pointer; letter-spacing: 0.05em; }
+  .button-bar button:last-child { border-right: none; }
+  .button-bar button:disabled { color: #556677; cursor: not-allowed; }
 
-  /* Pantallas */
   .view { display: none; }
   .view.active { display: block; }
-
-  .card {
-    background: #0a0f1c; border: 1px solid #0ff2;
-    border-radius: 4px; margin-bottom: 10px;
-    position: relative; overflow: visible;
-    animation: fadeIn 0.4s ease both;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
-  }
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to   { opacity: 1; transform: translateY(0); }
-  }
-  .card::before {
-    content: ''; position: absolute; top: 0; left: 0;
-    width: 3px; height: 100%;
-  }
-  
-  /* Estados */
-  .card.PENDIENTE::before  { background: #ff3344; }
+  .card { background: #0a0f1c; border: 1px solid #0ff2; border-radius: 4px; margin-bottom: 10px; position: relative; overflow: visible; animation: fadeIn 0.4s ease both; transition: border-color 0.2s ease, box-shadow 0.2s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; }
+  .card.PENDIENTE::before { background: #ff3344; }
   .card.EN-PROCESO::before { background: #ff9500; }
-  .card.TERMINADO::before  { background: #ffe600; }
+  .card.TERMINADO::before { background: #ffe600; }
   .card.DESPACHADO::before { background: #00cfff; }
-  .card.RECIBIDO::before   { background: #00e64d; }
-  
+  .card.RECIBIDO::before { background: #00e64d; }
   .card.PENDIENTE { cursor: pointer; }
-  .card.PENDIENTE.selected {
-    border-color: #00ffff;
-    box-shadow: 0 0 10px rgba(0, 255, 255, 0.25);
-  }
-
+  .card.PENDIENTE.selected { border-color: #00ffff; box-shadow: 0 0 10px rgba(0, 255, 255, 0.25); }
   .c { position: absolute; width: 8px; height: 8px; }
   .tl { top:0;left:0; border-top:1px solid #0ff5; border-left:1px solid #0ff5; }
   .tr { top:0;right:0; border-top:1px solid #0ff5; border-right:1px solid #0ff5; }
@@ -143,95 +47,33 @@
   .card-inner { padding: 12px 14px 12px 17px; }
   .card-top { display:flex; align-items:flex-start; justify-content:space-between; gap:8px; }
   .card-product { font-size:13px; color:#d8f0ff; letter-spacing:0.04em; line-height:1.3; flex:1; min-width:0; }
-  .card-qty {
-    font-size:11px; color:#0ff; letter-spacing:0.08em;
-    background:#0ff1; border:1px solid #0ff3;
-    padding:3px 9px; border-radius:2px; flex-shrink:0; white-space:nowrap;
-  }
+  .card-qty { font-size:11px; color:#0ff; letter-spacing:0.08em; background:#0ff1; border:1px solid #0ff3; padding:3px 9px; border-radius:2px; flex-shrink:0; white-space:nowrap; }
   .card-client { font-size:12px; color:#5588aa; margin-top:4px; letter-spacing:0.05em; }
   .card-mid { display:flex; align-items:center; margin-top:12px; gap:12px; }
   .bar-wrap { flex:1; min-width:0; }
   .bar-track { height:6px; background:#111c2a; border-radius:2px; overflow:hidden; }
   .bar-fill { height:100%; border-radius:2px; animation: barGrow 1s cubic-bezier(.4,0,.2,1) both; }
   @keyframes barGrow { from { width: 0 !important; } }
-  .bar-state-row {
-    position: relative;
-    height: 26px;
-    margin-top: 6px;
-    overflow: visible;
-  }
-  .estado-tag {
-    position: absolute;
-    font-size: 11px;
-    font-weight: bold;
-    letter-spacing: 0.10em;
-    padding: 3px 7px;
-    border-radius: 2px;
-    border: 1px solid;
-    white-space: nowrap;
-    top: 0;
-    transform: translateX(-100%);
-    line-height: 1.5;
-    font-family: 'Share Tech Mono', monospace;
-  }
-  .demora-box {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    flex-shrink: 0;
-    width: 50px;
-    gap: 0;
-  }
+  .bar-state-row { position: relative; height: 26px; margin-top: 6px; overflow: visible; }
+  .estado-tag { position: absolute; font-size: 11px; font-weight: bold; letter-spacing: 0.10em; padding: 3px 7px; border-radius: 2px; border: 1px solid; white-space: nowrap; top: 0; transform: translateX(-100%); line-height: 1.5; font-family: 'Share Tech Mono', monospace; }
+  .demora-box { display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 50px; gap: 0; }
   .demora-num { font-size: 26px; line-height: 1; font-weight: bold; }
   .demora-unit { font-size: 9px; color: #446688; letter-spacing: 0.1em; }
-  
-  .btn-informar {
-    background: #556677;
-    color: #fff;
-    border: none;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    font-weight: bold;
-    padding: 6px 12px;
-    border-radius: 2px;
-    cursor: pointer;
-    letter-spacing: 0.05em;
-    transition: all 0.1s ease;
-  }
-  
-  .card.titilar-terminado {
-    animation: titilarLento 1s linear 5;
-    border-color: #ffe600 !important;
-    box-shadow: 0 0 15px rgba(255,230,0,0.5) !important;
-  }
-  .card.titilar-terminado::before {
-    background: #ffe600 !important;
-  }
-  @keyframes titilarLento {
-    0%, 100% { opacity: 1; background: #0a0f1c; }
-    50% { opacity: 0.3; background: rgba(255,230,0,0.15); }
-  }
-
-  .loading {
-    text-align:center; color:#0ff6; font-size:13px;
-    letter-spacing:0.15em; padding:40px 0;
-    animation: blink2 1s infinite;
-  }
+  .btn-informar { background: #556677; color: #fff; border: none; font-family: 'Share Tech Mono', monospace; font-size: 11px; font-weight: bold; padding: 6px 12px; border-radius: 2px; cursor: pointer; letter-spacing: 0.05em; transition: all 0.1s ease; }
+  .card.titilar-terminado { animation: titilarLento 1s linear 5; border-color: #ffe600 !important; box-shadow: 0 0 15px rgba(255,230,0,0.5) !important; }
+  .card.titilar-terminado::before { background: #ffe600 !important; }
+  @keyframes titilarLento { 0%, 100% { opacity: 1; background: #0a0f1c; } 50% { opacity: 0.3; background: rgba(255,230,0,0.15); } }
+  .loading { text-align:center; color:#0ff6; font-size:13px; letter-spacing:0.15em; padding:40px 0; animation: blink2 1s infinite; }
   @keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
   .error { text-align:center; color:#ff3344; font-size:12px; padding:30px 12px; letter-spacing:0.08em; line-height:1.8; }
-  
-  /* Footer ocultable */
-  .footer {
-    text-align:center; font-size:13px; color:#7ecfff;
-    letter-spacing:0.12em; margin-top:10px; display: block;
-  }
+  .footer { text-align:center; font-size:13px; color:#7ecfff; letter-spacing:0.12em; margin-top:10px; display: block; }
 </style>
 </head>
 <body>
 <div class="container">
   
   <div class="header">
-    <img class="logo-img" id="logoImg" src="logo_original-removebg-preview.png" alt="Luxury High Density" />
+    <img class="logo-img" id="logoImg" src="logo_original-removebg-preview.png" alt="Logo" onerror="this.style.display='none'">
     <div class="header-info">
       <div class="live-badge"><div class="live-dot"></div>EN VIVO</div>
       <div class="clock" id="clock">--:--:--</div>
@@ -262,21 +104,13 @@
 
 <script>
 const SHEET_ID = '1Zd4OApS21VwEA29jHzbAM0P_Q8T6BOaChgj9q5EhNWo';
-let rawPedidos = [];
-let productos = {};
-let clientes = {};
-let seleccionados = new Set();
-let enPedidos = true;
+let rawPedidos = [], productos = {}, clientes = {}, seleccionados = new Set(), enPedidos = true;
 
-function sheetURL(nombre) {
-  return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(nombre)}&t=${Date.now()}`;
-}
-
+function sheetURL(nombre) { return `https://docs.google.com/spreadsheets/d/${SHEET_ID}/gviz/tq?tqx=out:json&sheet=${encodeURIComponent(nombre)}&t=${Date.now()}`; }
 async function fetchSheet(nombre) {
   const res = await fetch(sheetURL(nombre));
   const txt = await res.text();
-  const json = JSON.parse(txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]);
-  return json.table.rows;
+  return JSON.parse(txt.match(/google\.visualization\.Query\.setResponse\(([\s\S]*)\)/)[1]).table.rows;
 }
 
 function parseGoogleDate(v) {
@@ -288,24 +122,9 @@ function parseGoogleDate(v) {
   return null;
 }
 
-const COLORES = {
-  'PENDIENTE':  '#ff3344',
-  'EN PROCESO': '#ff9500',
-  'TERMINADO':  '#ffe600',
-  'DESPACHADO': '#00cfff',
-  'RECIBIDO':   '#00e64d',
-};
-
-const BAR_PCT = { 'PENDIENTE':28, 'EN PROCESO':50, 'TERMINADO':65, 'DESPACHADO':80, 'RECIBIDO':100 };
-
-const TAG_BG = {
-  'PENDIENTE':  'rgba(255,51,68,0.12)',
-  'EN PROCESO': 'rgba(255,149,0,0.12)',
-  'TERMINADO':  'rgba(255,230,0,0.12)',
-  'DESPACHADO': 'rgba(0,207,255,0.12)',
-  'RECIBIDO':   'rgba(0,230,77,0.12)',
-};
-
+const COLORES = { 'PENDIENTE': '#ff3344', 'EN PROCESO': '#ff9500', 'TERMINADO': '#ffe600', 'DESPACHADO': '#00cfff', 'RECIBIDO': '#00e64d' };
+const BAR_PCT = { 'PENDIENTE': 28, 'EN PROCESO': 50, 'TERMINADO': 65, 'DESPACHADO': 80, 'RECIBIDO': 100 };
+const TAG_BG = { 'PENDIENTE': 'rgba(255,51,68,0.12)', 'EN PROCESO': 'rgba(255,149,0,0.12)', 'TERMINADO': 'rgba(255,230,0,0.12)', 'DESPACHADO': 'rgba(0,207,255,0.12)', 'RECIBIDO': 'rgba(0,230,77,0.12)' };
 const UMBRAL_DIAS = 7;
 
 function estadoKey(e) { return (e||'').trim().toUpperCase(); }
@@ -315,227 +134,103 @@ async function cargarTodo() {
   if (!enPedidos) return;
   document.getElementById('cards').innerHTML = '<div class="loading">CARGANDO DATOS...</div>';
   try {
-    const [rowsPedidos, rowsPrecios, rowsClientes] = await Promise.all([
-      fetchSheet('PEDIDOS'),
-      fetchSheet('PRECIOS DE LISTA'),
-      fetchSheet('CLIENTES'),
-    ]);
-
+    const [rowsPedidos, rowsPrecios, rowsClientes] = await Promise.all([ fetchSheet('PEDIDOS'), fetchSheet('PRECIOS DE LISTA'), fetchSheet('CLIENTES') ]);
     rawPedidos = rowsPedidos; 
     seleccionados.clear();
     actualizarBotonTareas();
-
-    productos = {};
-    rowsPrecios.forEach(r => {
-      const id = r.c[0]?.v; const nombre = r.c[1]?.v;
-      if (id != null && nombre) productos[String(id)] = nombre;
-    });
-
-    clientes = {};
-    rowsClientes.forEach(r => {
-      const id = r.c[0]?.v; const nombre = r.c[1]?.v;
-      if (id && nombre) clientes[String(id)] = nombre;
-    });
-
+    productos = {}; rowsPrecios.forEach(r => { if (r.c[0]?.v != null && r.c[1]?.v) productos[String(r.c[0].v)] = r.c[1].v; });
+    clientes = {}; rowsClientes.forEach(r => { if (r.c[0]?.v && r.c[1]?.v) clientes[String(r.c[0].v)] = r.c[1].v; });
     renderizarPedidos();
-
   } catch(e) {
-    document.getElementById('cards').innerHTML =
-      `<div class="error">// ERROR AL CARGAR DATOS<br>Verificá que las 3 hojas sean públicas<br><small style="color:#446688">${e.message}</small></div>`;
+    document.getElementById('cards').innerHTML = `<div class="error">// ERROR AL CARGAR DATOS<br>${e.message}</div>`;
   }
 }
 
 function renderizarPedidos() {
-  if (!rawPedidos || rawPedidos.length === 0) {
-    document.getElementById('cards').innerHTML = '<div class="error">// SIN PEDIDOS REGISTRADOS</div>';
-    return;
-  }
-
+  if (!rawPedidos || rawPedidos.length === 0) return;
   let html = '';
   rawPedidos.forEach((row, i) => {
-    const cols           = row.c;
-    const fechaRaw       = cols[1]?.v || null;
-    const clienteId      = String(cols[2]?.v || '');
-    const prodId         = String(cols[3]?.v || '');
-    const cantidad       = cols[4]?.v || '—';
-    const estadoRaw      = estadoKey(cols[6]?.v || 'PENDIENTE');
-    const fechaCierreRaw = cols[7]?.v || null;
-
-    const fechaObj    = parseGoogleDate(fechaRaw);
-    const fechaCierre = parseGoogleDate(fechaCierreRaw);
-
-    let dias;
-    if (estadoRaw === 'RECIBIDO') {
-      if (fechaCierre && fechaObj) {
-        const diff = Math.floor((fechaCierre - fechaObj) / (1000*60*60*24));
-        dias = diff >= 0 ? diff : 0;
-      } else if (fechaObj) {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        dias = Math.floor((hoy - fechaObj) / (1000*60*60*24));
-        if (dias < 0) dias = 0;
-      } else { dias = null; }
-    } else {
-      if (fechaObj) {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        dias = Math.floor((hoy - fechaObj) / (1000*60*60*24));
-        if (dias < 0) dias = 0;
-      } else { dias = null; }
-    }
-
-    const nombreProd = productos[prodId] || prodId;
-    const nombreCli  = clientes[clienteId] || clienteId;
-    const ck         = cssKey(estadoRaw);
-    const color      = COLORES[estadoRaw] || '#ff3344';
-    const pct        = BAR_PCT[estadoRaw] || 28;
-    const tagBg      = TAG_BG[estadoRaw] || 'rgba(255,51,68,0.12)';
-    const estadoLabel = estadoRaw.replace('EN PROCESO', 'EN&nbsp;PROCESO');
-
-    const diasNum    = (dias !== null) ? dias : '—';
-    const demasiado  = (dias !== null && dias > UMBRAL_DIAS);
-    const colorDias  = demasiado ? '#ff3344' : '#ffffff';
-
+    const cols = row.c;
+    const estadoRaw = estadoKey(cols[6]?.v || 'PENDIENTE');
     const isSelected = seleccionados.has(i) ? 'selected' : '';
-
-    const clockSVG = `<svg xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="${colorDias}" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 15.5 14.5"/></svg>`;
-
-    html += `
-    <div class="card ${ck} ${isSelected}" id="card-pedido-${i}" style="animation-delay:${i*0.08}s" onclick="toggleSeleccion(${i}, '${estadoRaw}')">
-      <div class="c tl"></div><div class="c tr"></div>
-      <div class="c bl"></div><div class="c br"></div>
-      <div class="card-inner">
-        <div class="card-top">
-          <div class="card-product">${nombreProd}</div>
-          <div class="card-qty">${cantidad} ud.</div>
-        </div>
-        <div class="card-client">&gt; ${nombreCli}</div>
-        <div class="card-mid">
-          <div class="bar-wrap">
-            <div class="bar-track">
-              <div class="bar-fill" style="width:${pct}%;background:${color};"></div>
-            </div>
-            <div class="bar-state-row">
-              <div class="estado-tag" style="left:${pct}%;color:${color};border-color:${color};background:${tagBg};">${estadoLabel}</div>
-            </div>
-          </div>
-          <div class="demora-box">
-            ${clockSVG}
-            <div class="demora-num" style="color:${colorDias};">${diasNum}</div>
-            <div class="demora-unit">DÍAS</div>
-          </div>
-        </div>
-      </div>
-    </div>`;
+    html += `<div class="card ${cssKey(estadoRaw)} ${isSelected}" id="card-pedido-${i}" onclick="toggleSeleccion(${i}, '${estadoRaw}')">
+              <div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
+              <div class="card-inner">
+                <div class="card-top">
+                  <div class="card-product">${productos[cols[3]?.v] || cols[3]?.v}</div>
+                  <div class="card-qty">${cols[4]?.v || '—'} ud.</div>
+                </div>
+                <div class="card-client">&gt; ${clientes[cols[2]?.v] || cols[2]?.v}</div>
+              </div>
+            </div>`;
   });
-
   document.getElementById('cards').innerHTML = html;
   actualizarFooter(rawPedidos.length);
 }
 
-function toggleSeleccion(index, estado) {
-  if (estado !== 'PENDIENTE') return; 
-
-  const cardElement = document.getElementById(`card-pedido-${index}`);
-  if (seleccionados.has(index)) {
-    seleccionados.delete(index);
-    cardElement.classList.remove('selected');
-  } else {
-    seleccionados.add(index);
-    cardElement.classList.add('selected');
-  }
+function toggleSeleccion(i, estado) {
+  if (estado !== 'PENDIENTE') return;
+  seleccionados.has(i) ? seleccionados.delete(i) : seleccionados.add(i);
+  renderizarPedidos();
   actualizarBotonTareas();
 }
 
-function actualizarBotonTareas() {
+function actualizarBotonTareas() { 
   const btn = document.getElementById('btnCrearTareas');
-  btn.disabled = seleccionados.size === 0;
+  // Solo habilitar si hay seleccionados y no estamos en modo "creado"
+  btn.disabled = seleccionados.size === 0; 
 }
 
 function crearTareasDiarias() {
-  seleccionados.forEach(index => {
-    if (rawPedidos[index] && rawPedidos[index].c[6]) {
-      rawPedidos[index].c[6].v = 'EN PROCESO';
-    }
-  });
-
   const containerTareas = document.getElementById('cardsTareas');
   containerTareas.innerHTML = '';
-
-  seleccionados.forEach(index => {
-    const row = rawPedidos[index];
-    const prodId = String(row.c[3]?.v || '');
-    const cantidad = row.c[4]?.v || '—';
-    const nombreProd = productos[prodId] || prodId;
-
+  seleccionados.forEach(i => {
+    const row = rawPedidos[i];
     const div = document.createElement('div');
     div.className = 'card EN-PROCESO';
-    div.id = `card-tarea-${index}`;
-    div.innerHTML = `
-      <div class="c tl"></div><div class="c tr"></div>
-      <div class="c bl"></div><div class="c br"></div>
+    div.id = `card-tarea-${i}`;
+    div.innerHTML = `<div class="c tl"></div><div class="c tr"></div><div class="c bl"></div><div class="c br"></div>
       <div class="card-inner">
-        <div class="card-top" style="align-items: center;">
-          <div class="card-product" style="font-size:14px; color:#ffe600;">${nombreProd}</div>
-          <div class="card-qty">${cantidad} ud.</div>
-        </div>
+        <div class="card-top"><div class="card-product">${productos[row.c[3]?.v] || row.c[3]?.v}</div><div class="card-qty">${row.c[4]?.v} ud.</div></div>
         <div style="margin-top: 15px; display:flex; justify-content: flex-end;">
-          <button class="btn-informar" id="btn-inf-${index}" onclick="informarTerminado(${index})">Informar TERMINADO</button>
+          <button class="btn-informar" id="btn-inf-${i}" onclick="informarTerminado(${i})">Informar TERMINADO</button>
         </div>
-      </div>
-    `;
+      </div>`;
     containerTareas.appendChild(div);
   });
-
+  
+  // Bloquear el botón tras la creación
+  document.getElementById('btnCrearTareas').disabled = true;
+  
   if(enPedidos) togglePantalla();
-  actualizarFooter(seleccionados.size);
 }
 
-function informarTerminado(index) {
-  const btn = document.getElementById(`btn-inf-${index}`);
-  const card = document.getElementById(`card-tarea-${index}`);
-  
-  btn.innerText = 'TERMINADO';
-  btn.style.backgroundColor = '#ffe600';
-  btn.style.color = '#060a12';
-  
+function informarTerminado(i) {
+  const btn = document.getElementById(`btn-inf-${i}`);
+  const card = document.getElementById(`card-tarea-${i}`);
+  btn.innerText = 'TERMINADO'; btn.style.backgroundColor = '#ffe600'; btn.style.color = '#060a12';
   card.classList.add('titilar-terminado');
-  
-  if (rawPedidos[index] && rawPedidos[index].c[6]) {
-    rawPedidos[index].c[6].v = 'TERMINADO';
-  }
-
   setTimeout(() => {
     card.style.display = 'none';
-    seleccionados.delete(index);
-    
+    seleccionados.delete(i);
     if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
       if(!enPedidos) togglePantalla();
-      seleccionados.clear();
-      renderizarPedidos();
-      actualizarBotonTareas();
-    } else {
-      actualizarFooter(seleccionados.size);
+      seleccionados.clear(); renderizarPedidos();
     }
-  }, 5000); 
+  }, 5000);
 }
 
 function togglePantalla() {
   enPedidos = !enPedidos;
-  
-  // Cambiar vistas
   document.getElementById('viewPedidos').classList.toggle('active');
   document.getElementById('viewTareas').classList.toggle('active');
-  
-  // Ajustar textos
   document.getElementById('pageTitle').innerText = enPedidos ? 'PEDIDOS' : 'TAREAS';
   document.getElementById('btnNavegar').innerText = enPedidos ? 'IR A TAREAS' : 'IR A PEDIDOS';
-  
-  // Lógica del botón Actualizar: deshabilitado en TAREAS
   document.getElementById('btnActualizar').disabled = !enPedidos;
-  
-  // Lógica del footer: ocultar en TAREAS
   document.getElementById('footer').style.display = enPedidos ? 'block' : 'none';
   
-  if(enPedidos) {
+  // Al volver a Pedidos, refrescar el estado del botón CREAR TAREAS
+  if (enPedidos) {
     seleccionados.clear();
     renderizarPedidos();
     actualizarBotonTareas();
@@ -544,45 +239,28 @@ function togglePantalla() {
 
 function imprimirPDF() {
   const element = document.getElementById('cardsTareas');
-  if(element.innerHTML.trim() === '') {
+  // Validación: solo imprimir si existen tareas
+  if(!element || element.innerHTML.trim() === '' || element.querySelectorAll('.card').length === 0) {
     alert('No hay tareas para imprimir.');
     return;
   }
-  
-  const opt = {
-    margin:       10,
-    filename:     'tareas_diarias.pdf',
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { scale: 2, useCORS: true, backgroundColor: '#060a12' },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  
+  const opt = { margin: 10, filename: 'tareas_diarias.pdf', image: { type: 'jpeg', quality: 0.98 }, html2canvas: { scale: 2, useCORS: true, backgroundColor: '#060a12' }, jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' } };
   html2pdf().set(opt).from(element).save();
 }
 
-function actualizarFooter(totalRegistros) {
-  const now = new Date();
-  document.getElementById('footer').textContent =
-    `// SYNC ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')} · ${totalRegistros} REGISTROS`;
+function actualizarFooter(n) {
+  const d = new Date();
+  document.getElementById('footer').textContent = `// SYNC ${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')} · ${n} REGISTROS`;
 }
 
 function tick() {
-  const now = new Date();
-  document.getElementById('clock').textContent =
-    `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
-  
-  const dia = String(now.getDate()).padStart(2, '0');
-  const mes = String(now.getMonth() + 1).padStart(2, '0');
-  const anio = String(now.getFullYear()).slice(-2);
-  document.getElementById('date').textContent = `${dia}/${mes}/${anio}`;
+  const d = new Date();
+  document.getElementById('clock').textContent = `${d.getHours().toString().padStart(2,'0')}:${d.getMinutes().toString().padStart(2,'0')}:${d.getSeconds().toString().padStart(2,'0')}`;
+  document.getElementById('date').textContent = `${d.getDate().toString().padStart(2,'0')}/${(d.getMonth()+1).toString().padStart(2,'0')}/${d.getFullYear().toString().substr(-2)}`;
 }
 
-tick();
 setInterval(tick, 1000);
-setInterval(() => {
-  if (enPedidos) { cargarTodo(); }
-}, 60000);
-
+setInterval(() => { if(enPedidos) cargarTodo(); }, 60000);
 cargarTodo();
 </script>
 </body>

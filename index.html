@@ -38,6 +38,7 @@
     height: 56px; width: auto; display: block;
     object-fit: contain;
     border-radius: 4px;
+    filter: drop-shadow(0 0 4px rgba(255,255,255,0.1));
   }
   .header-info {
     display: flex; flex-direction: column; align-items: flex-end; gap: 4px;
@@ -78,7 +79,7 @@
   }
   .button-bar {
     display: flex;
-    border: 2px solid #ffe600; /* Borde amarillo de la imagen */
+    border: 2px solid #ffe600;
     background: #0a0f1c;
   }
   .button-bar button {
@@ -99,7 +100,12 @@
   }
   .button-bar button:disabled {
     color: #556677;
+    background: #060a12;
+    border-right: 2px solid #556677;
     cursor: not-allowed;
+  }
+  .button-bar button:disabled:last-child {
+    border-right: none;
   }
 
   /* Pantallas */
@@ -129,7 +135,6 @@
   .card.DESPACHADO::before { background: #00cfff; }
   .card.RECIBIDO::before   { background: #00e64d; }
   
-  /* Selección de Cards (Color GOP) */
   .card.PENDIENTE { cursor: pointer; }
   .card.PENDIENTE.selected {
     border-color: #00ffff;
@@ -200,9 +205,8 @@
     transition: all 0.1s ease;
   }
   
-  /* Animación LENTA de Titileo 5 Veces en 5 Segundos */
   .card.titilar-terminado {
-    animation: titilarLento 1s linear 5; /* 1 segundo por ciclo, repite 5 veces = 5 segundos */
+    animation: titilarLento 1s linear 5;
     border-color: #ffe600 !important;
     box-shadow: 0 0 15px rgba(255,230,0,0.5) !important;
   }
@@ -221,17 +225,12 @@
   }
   @keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
   .error { text-align:center; color:#ff3344; font-size:12px; padding:30px 12px; letter-spacing:0.08em; line-height:1.8; }
+  
+  /* Footer ocultable */
   .footer {
     text-align:center; font-size:13px; color:#7ecfff;
-    letter-spacing:0.12em; margin-top:10px;
+    letter-spacing:0.12em; margin-top:10px; display: block;
   }
-  .refresh-btn {
-    display:block; margin:12px auto 0; background:transparent;
-    border:1px solid #0ff3; color:#0ff8; font-family:'Share Tech Mono',monospace;
-    font-size:11px; letter-spacing:0.12em; padding:7px 18px;
-    border-radius:2px; cursor:pointer;
-  }
-  .refresh-btn:active { background:#0ff1; }
 </style>
 </head>
 <body>
@@ -250,14 +249,14 @@
     <div class="page-title" id="pageTitle">PEDIDOS</div>
     <div class="button-bar">
       <button id="btnCrearTareas" disabled onclick="crearTareasDiarias()">CREAR TAREAS</button>
-      <button id="btnImprimir" onclick="imprimirPDF()">IMPRIMIR TAREAS</button>
+      <button id="btnImprimir" disabled onclick="imprimirPDF()">IMPRIMIR TAREAS</button>
       <button id="btnNavegar" onclick="togglePantalla()">IR A TAREAS</button>
+      <button id="btnActualizar" onclick="cargarTodo()">ACTUALIZAR</button>
     </div>
   </div>
 
   <div id="viewPedidos" class="view active">
     <div id="cards"><div class="loading">CARGANDO DATOS...</div></div>
-    <button class="refresh-btn" onclick="cargarTodo()">↺ ACTUALIZAR</button>
   </div>
 
   <div id="viewTareas" class="view">
@@ -319,6 +318,7 @@ function estadoKey(e) { return (e||'').trim().toUpperCase(); }
 function cssKey(e) { return estadoKey(e).replace(/ /g,'-'); }
 
 async function cargarTodo() {
+  if (!enPedidos) return;
   document.getElementById('cards').innerHTML = '<div class="loading">CARGANDO DATOS...</div>';
   try {
     const [rowsPedidos, rowsPrecios, rowsClientes] = await Promise.all([
@@ -330,6 +330,7 @@ async function cargarTodo() {
     rawPedidos = rowsPedidos; 
     seleccionados.clear();
     actualizarBotonTareas();
+    actualizarBotonImprimir();
 
     productos = {};
     rowsPrecios.forEach(r => {
@@ -456,6 +457,18 @@ function actualizarBotonTareas() {
   btn.disabled = seleccionados.size === 0;
 }
 
+function actualizarBotonImprimir() {
+  const btnImprimir = document.getElementById('btnImprimir');
+  const containerTareas = document.getElementById('cardsTareas');
+  
+  // Se habilita solo si hay elementos de tipo card dentro del panel de tareas
+  if (containerTareas && containerTareas.querySelectorAll('.card').length > 0) {
+    btnImprimir.disabled = false;
+  } else {
+    btnImprimir.disabled = true;
+  }
+}
+
 function crearTareasDiarias() {
   seleccionados.forEach(index => {
     if (rawPedidos[index] && rawPedidos[index].c[6]) {
@@ -491,8 +504,12 @@ function crearTareasDiarias() {
     containerTareas.appendChild(div);
   });
 
+  // Limpiar seleccionados y deshabilitar botón antes de saltar de pantalla
+  seleccionados.clear();
+  actualizarBotonTareas();
+  actualizarBotonImprimir();
+
   if(enPedidos) togglePantalla();
-  actualizarFooter(seleccionados.size);
 }
 
 function informarTerminado(index) {
@@ -509,50 +526,47 @@ function informarTerminado(index) {
     rawPedidos[index].c[6].v = 'TERMINADO';
   }
 
-  // Espera 5 segundos (5000ms) para que termine la animación lenta
   setTimeout(() => {
-    card.style.display = 'none';
-    seleccionados.delete(index);
+    card.remove(); // Remueve el elemento directamente del DOM
+    actualizarBotonImprimir();
     
-    if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
-      if(!enPedidos) togglePantalla(); // Vuelve a pedidos si ya no hay tareas
-      seleccionados.clear();
+    if (document.querySelectorAll('#cardsTareas .card').length === 0) {
+      if(!enPedidos) togglePantalla();
       renderizarPedidos();
-      actualizarBotonTareas();
-    } else {
-      actualizarFooter(seleccionados.size);
     }
   }, 5000); 
 }
 
 function togglePantalla() {
   enPedidos = !enPedidos;
-  const viewPedidos = document.getElementById('viewPedidos');
-  const viewTareas = document.getElementById('viewTareas');
-  const btnNavegar = document.getElementById('btnNavegar');
-  const pageTitle = document.getElementById('pageTitle');
-
+  
+  // Cambiar vistas
+  document.getElementById('viewPedidos').classList.toggle('active');
+  document.getElementById('viewTareas').classList.toggle('active');
+  
+  // Ajustar textos
+  document.getElementById('pageTitle').innerText = enPedidos ? 'PEDIDOS' : 'TAREAS';
+  document.getElementById('btnNavegar').innerText = enPedidos ? 'IR A TAREAS' : 'IR A PEDIDOS';
+  
+  // Lógica del botón Actualizar: deshabilitado en TAREAS
+  document.getElementById('btnActualizar').disabled = !enPedidos;
+  
+  // Lógica del footer: ocultar en TAREAS
+  document.getElementById('footer').style.display = enPedidos ? 'block' : 'none';
+  
   if(enPedidos) {
-    viewPedidos.classList.add('active');
-    viewTareas.classList.remove('active');
-    btnNavegar.innerText = 'IR A TAREAS';
-    pageTitle.innerText = 'PEDIDOS';
-    
-    // Al volver a pedidos siempre actualiza visualmente los estados modificados
     seleccionados.clear();
     renderizarPedidos();
     actualizarBotonTareas();
-  } else {
-    viewPedidos.classList.remove('active');
-    viewTareas.classList.add('active');
-    btnNavegar.innerText = 'IR A PEDIDOS';
-    pageTitle.innerText = 'TAREAS';
   }
+  
+  // Sincronizar estado del botón imprimir al cambiar de panel
+  actualizarBotonImprimir();
 }
 
 function imprimirPDF() {
   const element = document.getElementById('cardsTareas');
-  if(element.innerHTML.trim() === '') {
+  if(!element || element.innerHTML.trim() === '') {
     alert('No hay tareas para imprimir.');
     return;
   }
@@ -576,12 +590,9 @@ function actualizarFooter(totalRegistros) {
 
 function tick() {
   const now = new Date();
-  
-  // Hora
   document.getElementById('clock').textContent =
     `${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}:${String(now.getSeconds()).padStart(2,'0')}`;
   
-  // Fecha
   const dia = String(now.getDate()).padStart(2, '0');
   const mes = String(now.getMonth() + 1).padStart(2, '0');
   const anio = String(now.getFullYear()).slice(-2);

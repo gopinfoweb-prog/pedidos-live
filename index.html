@@ -4,7 +4,6 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pedidos Live</title>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
 <style>
   @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&display=swap');
   * { box-sizing: border-box; margin: 0; padding: 0; }
@@ -14,8 +13,6 @@
     color: #c8e8ff;
     min-height: 100vh;
     overflow-x: hidden;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
   body::before {
     content: '';
@@ -120,8 +117,6 @@
     position: relative; overflow: visible;
     animation: fadeIn 0.4s ease both;
     transition: border-color 0.2s ease, box-shadow 0.2s ease;
-    -webkit-print-color-adjust: exact;
-    print-color-adjust: exact;
   }
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(8px); }
@@ -230,14 +225,99 @@
   @keyframes blink2 { 0%,100%{opacity:1;} 50%{opacity:0.3;} }
   .error { text-align:center; color:#ff3344; font-size:12px; padding:30px 12px; letter-spacing:0.08em; line-height:1.8; }
   
-  /* Footer ocultable */
   .footer {
     text-align:center; font-size:13px; color:#7ecfff;
     letter-spacing:0.12em; margin-top:10px; display: block;
   }
+
+  /* BLOQUE EXCLUSIVO PARA IMPRESIÓN IMPERFECTIBLE */
+  #vistaImpresionImpecable { display: none; }
+
+  @media print {
+    /* Ocultamos absolutamente todo el diseño cyberpunk oscuro de la app */
+    body, html, .container, .top-bar, #viewPedidos, #viewTareas, .footer, body::before {
+      background: #ffffff !important;
+      color: #000000 !important;
+      display: none !important;
+    }
+    
+    /* Forzamos que se muestre únicamente este bloque limpio en blanco y negro */
+    #vistaImpresionImpecable {
+      display: block !important;
+      background: #ffffff !important;
+      color: #000000 !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+      font-family: 'Share Tech Mono', monospace !important;
+    }
+
+    .print-header {
+      display: flex !important;
+      justify-content: space-between !important;
+      align-items: center !important;
+      border-bottom: 2px solid #000000 !important;
+      padding-bottom: 12px !important;
+      margin-bottom: 25px !important;
+    }
+
+    .print-logo {
+      height: 45px !important;
+      object-fit: contain !important;
+    }
+
+    .print-header-info {
+      text-align: right !important;
+      color: #000000 !important;
+    }
+
+    .print-row {
+      display: flex !important;
+      align-items: center !important;
+      border-bottom: 1px solid #000000 !important;
+      padding: 14px 5px !important;
+      color: #000000 !important;
+      font-size: 15px !important;
+      page-break-inside: avoid !important;
+    }
+
+    .print-checkbox {
+      width: 18px !important;
+      height: 18px !important;
+      border: 2px solid #000000 !important;
+      margin-right: 18px !important;
+      background: #ffffff !important;
+      flex-shrink: 0 !important;
+    }
+
+    .print-qty {
+      font-weight: bold !important;
+      margin-right: 25px !important;
+      min-width: 75px !important;
+      white-space: nowrap !important;
+    }
+
+    .print-product {
+      flex: 1 !important;
+      text-transform: uppercase !important;
+      letter-spacing: 0.03em !important;
+    }
+  }
 </style>
 </head>
 <body>
+
+<div id="vistaImpresionImpecable">
+  <div class="print-header">
+    <img class="print-logo" src="logo_original-removebg-preview.png">
+    <div class="print-header-info">
+      <div style="font-size: 16px; font-weight: bold; letter-spacing: 0.05em;" id="printMetaTitulo">LISTA DE TAREAS</div>
+      <div style="font-size: 11px; margin-top: 4px; letter-spacing: 0.1em;" id="printMetaHora">HORA DE IMPRESIÓN: --:--</div>
+    </div>
+  </div>
+  <div id="printListaItems"></div>
+</div>
+
 <div class="container">
   
   <div class="header">
@@ -264,9 +344,7 @@
   </div>
 
   <div id="viewTareas" class="view">
-    <div id="printContainer" style="width: 100%;">
-      <div id="cardsTareas"></div>
-    </div>
+    <div id="cardsTareas"></div>
   </div>
 
   <div class="footer" id="footer"></div>
@@ -372,28 +450,15 @@ function renderizarPedidos() {
     const prodId         = String(cols[3]?.v || '');
     const cantidad       = cols[4]?.v || '—';
     const estadoRaw      = estadoKey(cols[6]?.v || 'PENDIENTE');
-    const fechaCierreRaw = cols[7]?.v || null;
 
     const fechaObj    = parseGoogleDate(fechaRaw);
-    const fechaCierre = parseGoogleDate(fechaCierreRaw);
 
     let dias;
-    if (estadoRaw === 'RECIBIDO') {
-      if (fechaCierre && fechaObj) {
-        const diff = Math.floor((fechaCierre - fechaObj) / (1000*60*60*24));
-        dias = diff >= 0 ? diff : 0;
-      } else if (fechaObj) {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        dias = Math.floor((hoy - fechaObj) / (1000*60*60*24));
-        if (dias < 0) dias = 0;
-      } else { dias = null; }
-    } else {
-      if (fechaObj) {
-        const hoy = new Date(); hoy.setHours(0,0,0,0);
-        dias = Math.floor((hoy - fechaObj) / (1000*60*60*24));
-        if (dias < 0) dias = 0;
-      } else { dias = null; }
-    }
+    if (fechaObj) {
+      const hoy = new Date(); hoy.setHours(0,0,0,0);
+      dias = Math.floor((hoy - fechaObj) / (1000*60*60*24));
+      if (dias < 0) dias = 0;
+    } else { dias = null; }
 
     const nombreProd = productos[prodId] || prodId;
     const nombreCli  = clientes[clienteId] || clienteId;
@@ -570,7 +635,7 @@ function imprimirPDF() {
   const tareasActivas = containerTareas ? containerTareas.querySelectorAll('.card:not([style*="display: none"])') : [];
   
   if(tareasActivas.length === 0) {
-    alert('No hay tareas para imprimir.');
+    alert('No hay tareas activas para imprimir.');
     return;
   }
   
@@ -581,84 +646,29 @@ function imprimirPDF() {
   const horas = String(now.getHours()).padStart(2, '0');
   const minutos = String(now.getMinutes()).padStart(2, '0');
 
-  // Creamos un contenedor limpio off-screen exclusivo para estructurar el PDF
-  const tempPdfContainer = document.createElement('div');
-  tempPdfContainer.style.position = 'absolute';
-  tempPdfContainer.style.left = '-9999px';
-  tempPdfContainer.style.top = '0';
-  tempPdfContainer.style.width = '175mm'; 
-  tempPdfContainer.style.background = '#ffffff';
-  tempPdfContainer.style.color = '#000000';
-  tempPdfContainer.style.padding = '10px';
-  tempPdfContainer.style.fontFamily = "'Share Tech Mono', monospace";
+  // Cargamos los datos limpios en la sección oculta de impresión
+  document.getElementById('printMetaTitulo').innerText = `LISTA DE TAREAS DEL ${dia}/${mes}/${anio}`;
+  document.getElementById('printMetaHora').innerText = `HORA DE IMPRESIÓN: ${horas}:${minutos}`;
 
-  // Armamos el encabezado limpio (Texto Negro + Línea divisoria Negra)
-  let htmlContenido = `
-    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000000; padding-bottom: 12px; margin-bottom: 20px;">
-      <img src="logo_original-removebg-preview.png" style="height: 45px; object-fit: contain;">
-      <div style="text-align: right; color: #000000;">
-        <div style="font-size: 16px; font-weight: bold; letter-spacing: 0.05em;">LISTA DE TAREAS DEL ${dia}/${mes}/${anio}</div>
-        <div style="font-size: 11px; margin-top: 4px; letter-spacing: 0.1em;">HORA DE IMPRESIÓN: ${horas}:${minutos}</div>
-      </div>
-    </div>
-    <div style="display: flex; flex-direction: column; gap: 0;">
-  `;
-
-  // Mapeamos las tareas de la pantalla a un formato de lista simple con caja para tilde
+  let htmlAcumulado = '';
   tareasActivas.forEach(card => {
     const producto = card.querySelector('.card-product').innerText;
     const cantidad = card.querySelector('.card-qty').innerText;
     
-    htmlContenido += `
-      <div style="display: flex; align-items: center; border-bottom: 1px solid #000000; padding: 12px 5px; color: #000000; font-size: 14px;">
-        <div style="width: 18px; height: 18px; border: 2px solid #000000; margin-right: 15px; flex-shrink: 0; background: #ffffff;"></div>
-        <div style="font-weight: bold; margin-right: 20px; min-width: 65px; white-space: nowrap;">${cantidad}</div>
-        <div style="flex: 1; text-transform: uppercase; letter-spacing: 0.05em; line-height: 1.2;">${producto}</div>
+    htmlAcumulado += `
+      <div class="print-row">
+        <div class="print-checkbox"></div>
+        <div class="print-qty">${cantidad}</div>
+        <div class="print-product">${producto}</div>
       </div>
     `;
   });
 
-  htmlContenido += `</div>`;
-  tempPdfContainer.innerHTML = htmlContenido;
-  document.body.appendChild(tempPdfContainer);
+  document.getElementById('printListaItems').innerHTML = htmlAcumulado;
 
-  const opt = {
-    margin:       [12, 12, 15, 12],
-    filename:     `tareas_diarias_${dia}${mes}${anio}.pdf`,
-    image:        { type: 'jpeg', quality: 0.98 },
-    html2canvas:  { 
-      scale: 2, 
-      useCORS: true, 
-      backgroundColor: '#ffffff'
-    },
-    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
-  };
-  
-  html2pdf().set(opt).from(tempPdfContainer).toPdf().get('pdf').then(function(pdf) {
-    const totalPages = pdf.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFont('courier', 'bold');
-      pdf.setFontSize(10);
-      pdf.setTextColor(0, 0, 0); // Número de página en negro absoluto
-      
-      const pageWidth = pdf.internal.pageSize.getWidth();
-      const pageHeight = pdf.internal.pageSize.getHeight();
-      const textoFooter = `HOJA ${i} DE ${totalPages}`;
-      
-      const textWidth = pdf.getStringUnitWidth(textoFooter) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
-      const xPos = (pageWidth - textWidth) / 2;
-      
-      pdf.text(textoFooter, xPos, pageHeight - 8);
-    }
-  }).save().then(() => {
-    document.body.removeChild(tempPdfContainer);
-  }).catch(err => {
-    if (tempPdfContainer.parentNode) {
-      document.body.removeChild(tempPdfContainer);
-    }
-    console.error("Error al generar PDF:", err);
-  });
+  // Ejecutamos la función nativa del sistema operativo. Al abrirse el menú de guardado,
+  // vas a ver la previsualización perfecta en hoja blanca con las tablas y textos negros.
+  window.print();
 }
 
 function actualizarFooter(totalRegistros) {

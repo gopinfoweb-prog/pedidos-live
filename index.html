@@ -236,7 +236,7 @@
 
 <div class="container">
   <div class="header">
-    <img class="logo-img" id="logoImg" src="logo_original-removebg-preview.png" alt="Logo" />
+    <img class="logo-img" id="logoImg" src="logo_original-removebg-preview.png" alt="Luxury High Density" />
     <div class="header-info">
       <div class="live-badge"><div class="live-dot"></div>EN VIVO</div>
       <div class="clock" id="clock">--:--:--</div>
@@ -554,20 +554,17 @@ function imprimirPDF() {
     return;
   }
   
-  // 1. Preparar datos
+  // 1. Preparar el contenedor espejo para la captura
   const now = new Date();
   const fecha = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getFullYear()).slice(-2)}`;
-  const hora = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:${String(now.getSeconds()).padStart(2, '0')}`;
+  const hora = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
-  // 2. Estructura HTML con el logo
+  // Creamos dinámicamente una estructura limpia solo para el PDF
   let htmlPDF = `
     <div style="font-family: 'Courier New', Courier, monospace; color: #000; padding: 20px;">
-      <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
-        <img src="https://lh3.googleusercontent.com/d/1AfstJKbihBXpQqWIEJfeVHzpmUebLEpF" style="height: 40px; width: auto;">
-        <div style="text-align: right;">
-          <div style="font-weight: bold; font-size: 16px;">LISTA DE TAREAS</div>
-          <div style="font-size: 12px;">${fecha} - ${hora}</div>
-        </div>
+      <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
+        <div style="font-weight: bold; font-size: 18px;">LISTA DE TAREAS DEL ${fecha}</div>
+        <div style="font-size: 14px;">${hora}</div>
       </div>
       <div>
   `;
@@ -575,6 +572,7 @@ function imprimirPDF() {
   tareasActivas.forEach(card => {
     const producto = card.querySelector('.card-product').innerText;
     const cantidad = card.querySelector('.card-qty').innerText;
+    
     htmlPDF += `
       <div style="display: flex; align-items: center; padding: 10px 0; border-bottom: 1px solid #eee;">
         <div style="min-width: 80px; font-weight: bold;">${cantidad}</div>
@@ -583,30 +581,24 @@ function imprimirPDF() {
       </div>
     `;
   });
+
   htmlPDF += `</div></div>`;
 
+  // 2. Usar un elemento temporal para el renderizado
   const divTemp = document.createElement('div');
   divTemp.innerHTML = htmlPDF;
   document.body.appendChild(divTemp);
 
-  // 3. Configuración con numeración de páginas
   const opt = {
-    margin: 15,
-    filename: `lista_tareas_${fecha.replace(/\//g, '-')}.pdf`,
-    image: { type: 'jpeg', quality: 1 },
-    html2canvas: { scale: 2 },
-    jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' },
-    pagebreak: { mode: 'avoid-all' }
+    margin:       15,
+    filename:     `lista_tareas_${fecha.replace(/\//g, '-')}.pdf`,
+    image:        { type: 'jpeg', quality: 1 },
+    html2canvas:  { scale: 2 },
+    jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   
-  html2pdf().set(opt).from(divTemp).toPdf().get('pdf').then(pdf => {
-    const totalPages = pdf.internal.getNumberOfPages();
-    for (let i = 1; i <= totalPages; i++) {
-      pdf.setPage(i);
-      pdf.setFontSize(10);
-      pdf.text(`Página ${i} de ${totalPages}`, pdf.internal.pageSize.getWidth() / 2, pdf.internal.pageSize.getHeight() - 10, { align: 'center' });
-    }
-  }).save().then(() => {
+  // 3. Generar y limpiar
+  html2pdf().set(opt).from(divTemp).save().then(() => {
     document.body.removeChild(divTemp);
   });
 }

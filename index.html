@@ -465,7 +465,7 @@ function actualizarBotonImprimir() {
   const btnImprimir = document.getElementById('btnImprimir');
   const containerTareas = document.getElementById('cardsTareas');
   
-  if (containerTareas && containerTareas.querySelectorAll('.card').length > 0) {
+  if (containerTareas && containerTareas.querySelectorAll('.card:not([style*="display: none"])').length > 0) {
     btnImprimir.disabled = false;
   } else {
     btnImprimir.disabled = true;
@@ -529,12 +529,15 @@ function informarTerminado(index) {
   }
 
   setTimeout(() => {
-    card.remove(); 
+    card.style.display = 'none';
+    seleccionados.delete(index);
     actualizarBotonImprimir();
     
-    if (document.querySelectorAll('#cardsTareas .card').length === 0) {
+    if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
       if(!enPedidos) togglePantalla();
+      seleccionados.clear();
       renderizarPedidos();
+      actualizarBotonTareas();
     }
   }, 5000); 
 }
@@ -561,25 +564,89 @@ function togglePantalla() {
 }
 
 function imprimirPDF() {
-  const element = document.getElementById('cardsTareas');
-  if(!element || element.innerHTML.trim() === '') {
+  const elementTareas = document.getElementById('cardsTareas');
+  if(!elementTareas || elementTareas.querySelectorAll('.card:not([style*="display: none"])').length === 0) {
     alert('No hay tareas para imprimir.');
     return;
   }
   
+  // Crear contenedor oculto en el DOM para inyectarle el Header y las Tareas
+  const printContainer = document.createElement('div');
+  printContainer.style.position = 'absolute';
+  printContainer.style.left = '-9999px';
+  printContainer.style.top = '0';
+  printContainer.style.width = '480px';
+  printContainer.style.backgroundColor = '#060a12';
+  printContainer.style.padding = '10px';
+  printContainer.style.color = '#c8e8ff';
+  printContainer.style.fontFamily = "'Share Tech Mono', monospace";
+  
+  // Calcular hora y fecha de impresión
+  const now = new Date();
+  const dia = String(now.getDate()).padStart(2, '0');
+  const mes = String(now.getMonth() + 1).padStart(2, '0');
+  const anio = String(now.getFullYear()).slice(-2);
+  const horas = String(now.getHours()).padStart(2, '0');
+  const minutos = String(now.getMinutes()).padStart(2, '0');
+  
+  // Estructura del Header
+  const headerHTML = `
+    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #0ff5; padding-bottom: 12px; margin-bottom: 20px;">
+      <img src="logo_original-removebg-preview.png" style="height: 45px; object-fit: contain; filter: drop-shadow(0 0 4px rgba(255,255,255,0.1));">
+      <div style="text-align: right;">
+        <div style="font-size: 14px; color: #00ffff; font-weight: bold; letter-spacing: 0.05em;">LISTA DE TAREAS DEL ${dia}/${mes}/${anio}</div>
+        <div style="font-size: 11px; color: #ffe600; margin-top: 4px; letter-spacing: 0.1em;">HORA DE IMPRESIÓN: ${horas}:${minutos}</div>
+      </div>
+    </div>
+    <div id="printBody"></div>
+  `;
+  printContainer.innerHTML = headerHTML;
+  
+  // Clonar las tareas actuales al cuerpo de impresión
+  const printBody = printContainer.querySelector('#printBody');
+  const tareasCards = elementTareas.querySelectorAll('.card:not([style*="display: none"])');
+  tareasCards.forEach(card => {
+    printBody.appendChild(card.cloneNode(true));
+  });
+  
+  // Adjuntar al body para que html2canvas pueda renderizar los estilos aplicados
+  document.body.appendChild(printContainer);
+  
   const opt = {
-    margin:       12,
-    filename:     'tareas_diarias.pdf',
+    margin:       [10, 10, 15, 10], // top, left, bottom, right
+    filename:     `tareas_diarias_${dia}${mes}${anio}.pdf`,
     image:        { type: 'jpeg', quality: 0.98 },
     html2canvas:  { 
       scale: 2, 
       useCORS: true, 
-      backgroundColor: '#060a12' // Fuerza el color de fondo exacto oscuro en la captura del canvas
+      backgroundColor: '#060a12' 
     },
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   
-  html2pdf().set(opt).from(element).save();
+  // Procesar e inyectar el número de hojas
+  html2pdf().set(opt).from(printContainer).toPdf().get('pdf').then(function(pdf) {
+    const totalPages = pdf.internal.getNumberOfPages();
+    for (let i = 1; i <= totalPages; i++) {
+      pdf.setPage(i);
+      pdf.setFont('courier', 'bold');
+      pdf.setFontSize(10);
+      pdf.setTextColor(0, 255, 255); // Color cian de la app
+      
+      const pageWidth = pdf.internal.pageSize.getWidth();
+      const pageHeight = pdf.internal.pageSize.getHeight();
+      const textoFooter = `HOJA ${i} DE ${totalPages}`;
+      
+      // Calcular para centrar el número en la parte inferior
+      const textWidth = pdf.getStringUnitWidth(textoFooter) * pdf.internal.getFontSize() / pdf.internal.scaleFactor;
+      const xPos = (pageWidth - textWidth) / 2;
+      
+      pdf.text(textoFooter, xPos, pageHeight - 8);
+    }
+  }).save().then(() => {
+    // Borrar el contenedor temporal una vez exportado
+    document.body.removeChild(printContainer);
+  });
 }
 
 function actualizarFooter(totalRegistros) {

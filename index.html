@@ -317,7 +317,7 @@ function estadoKey(e) { return (e||'').trim().toUpperCase(); }
 function cssKey(e) { return estadoKey(e).replace(/ /g,'-'); }
 
 // ==========================================
-// NUEVA FUNCION PARA IMPACTAR EN SHEETY (CON ALERTAS DE ERROR)
+// NUEVA FUNCION PARA IMPACTAR EN SHEETY (CON ALERTA FORZADA)
 // ==========================================
 async function actualizarEstadoSheety(index, nuevoEstado) {
   // Calculamos el ID. Google Vis API trae los datos desde la fila 2 (índice 0).
@@ -339,17 +339,17 @@ async function actualizarEstadoSheety(index, nuevoEstado) {
       body: JSON.stringify(body)
     });
     
+    const responseText = await response.text();
+    
     if (!response.ok) {
-      const errorText = await response.text();
-      // ESTO HARÁ SALTAR UN CARTEL CON EL ERROR EXACTO
-      alert(`ERROR DE SHEETY en fila ${sheetyId}:\nCódigo HTTP: ${response.status}\nDetalle: ${errorText}`);
-      console.error(`Error Sheety:`, errorText);
+      alert(`❌ ERROR DE SHEETY (Fila ${sheetyId}):\nCódigo HTTP: ${response.status}\nDetalle: ${responseText}`);
+      console.error(`Error Sheety:`, responseText);
     } else {
-      console.log(`Sheety OK: Fila ${sheetyId} actualizada correctamente a '${nuevoEstado}'`);
+      alert(`✅ SHEETY RESPONDIÓ OK:\nFila modificada: ${sheetyId}\nRespuesta del servidor:\n${responseText}\n\nRevisá si el JSON dice "estado": "${nuevoEstado}" o si tiene otro nombre de columna.`);
+      console.log(`Sheety OK: Fila ${sheetyId}`, responseText);
     }
   } catch (error) {
-    // ESTO SALTA SI HAY UN PROBLEMA DE RED O CORS
-    alert(`ERROR DE CONEXIÓN CON SHEETY:\n${error.message}`);
+    alert(`⚠️ ERROR DE CONEXIÓN CON SHEETY:\n${error.message}`);
     console.error('Error de red:', error);
   }
 }

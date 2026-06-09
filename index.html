@@ -317,16 +317,13 @@ function estadoKey(e) { return (e||'').trim().toUpperCase(); }
 function cssKey(e) { return estadoKey(e).replace(/ /g,'-'); }
 
 // ==========================================
-// NUEVA FUNCION PARA IMPACTAR EN SHEETY
+// NUEVA FUNCION PARA IMPACTAR EN SHEETY (CON ALERTAS DE ERROR)
 // ==========================================
 async function actualizarEstadoSheety(index, nuevoEstado) {
-  // En Google Sheets la fila 1 tiene los títulos. 
-  // rawPedidos[0] corresponde a la fila 2 del Excel.
-  // Sheety mapea el 'id' según la fila, así que le sumamos 2 al index.
+  // Calculamos el ID. Google Vis API trae los datos desde la fila 2 (índice 0).
   const sheetyId = index + 2; 
   const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury(baseDeDatosApp)/pedidos/${sheetyId}`;
   
-  // Sheety requiere enviar el objeto bajo la raíz singular ('pedido') y en formato camelCase ('estado').
   const body = {
     pedido: {
       estado: nuevoEstado 
@@ -344,12 +341,16 @@ async function actualizarEstadoSheety(index, nuevoEstado) {
     
     if (!response.ok) {
       const errorText = await response.text();
-      console.error(`Error al actualizar Sheety en fila ${sheetyId}:`, errorText);
+      // ESTO HARÁ SALTAR UN CARTEL CON EL ERROR EXACTO
+      alert(`ERROR DE SHEETY en fila ${sheetyId}:\nCódigo HTTP: ${response.status}\nDetalle: ${errorText}`);
+      console.error(`Error Sheety:`, errorText);
     } else {
       console.log(`Sheety OK: Fila ${sheetyId} actualizada correctamente a '${nuevoEstado}'`);
     }
   } catch (error) {
-    console.error('Error de red al intentar conectar con Sheety:', error);
+    // ESTO SALTA SI HAY UN PROBLEMA DE RED O CORS
+    alert(`ERROR DE CONEXIÓN CON SHEETY:\n${error.message}`);
+    console.error('Error de red:', error);
   }
 }
 // ==========================================

@@ -273,7 +273,7 @@ let clientes = {};
 let seleccionados = new Set();
 let enPedidos = true;
 
-// Función para actualizar en Sheety
+// Función añadida para conectar con Sheety correctamente
 async function actualizarEstadoSheety(index, nuevoEstado) {
   const filaSheet = index + 2; 
   const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxurySheety/pedidos/${filaSheet}`;
@@ -292,12 +292,12 @@ async function actualizarEstadoSheety(index, nuevoEstado) {
     });
     
     if (!response.ok) {
-      console.error("Error al actualizar:", await response.text());
+      console.error("Error al actualizar en Sheety:", await response.text());
     } else {
-      console.log("¡Actualizado con éxito!");
+      console.log("¡Actualizado en Google Sheets con éxito!");
     }
   } catch (error) {
-    console.error("Error de conexión:", error);
+    console.error("Error de conexión con Sheety:", error);
   }
 }
 
@@ -536,6 +536,7 @@ function informarTerminado(index) {
   
   if (rawPedidos[index] && rawPedidos[index].c[6]) {
     rawPedidos[index].c[6].v = 'TERMINADO';
+    // Se invoca la función para que se registre el cambio en la base de datos
     actualizarEstadoSheety(index, 'TERMINADO');
   }
 
@@ -647,9 +648,6 @@ function tick() {
 
 tick();
 setInterval(tick, 1000);
-setInterval(() => {
-  if (enPedidos) { cargarTodo(); }
-}, 60000);
 
 cargarTodo();
 </script>

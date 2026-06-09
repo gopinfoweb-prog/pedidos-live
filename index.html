@@ -499,7 +499,11 @@ function crearTareasDiarias() {
 async function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
+  
+  // Obtenemos el ID de fila (asumiendo columna 0)
   const idFila = rawPedidos[index].c[0]?.v;
+  
+  // URL de tu API de Sheety
   const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury/pedidos/${idFila}`;
   
   btn.innerText = 'GUARDANDO...';
@@ -523,8 +527,7 @@ async function informarTerminado(index) {
         seleccionados.delete(index);
         actualizarBotonImprimir();
         
-        const tareasActivas = document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])');
-        if (tareasActivas.length === 0) {
+        if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
           if(!enPedidos) togglePantalla();
           seleccionados.clear();
           renderizarPedidos();
@@ -532,14 +535,11 @@ async function informarTerminado(index) {
         }
       }, 2000);
     } else {
-      const err = await response.json();
-      console.error(err);
-      alert("Error al guardar: " + JSON.stringify(err));
-      btn.innerText = 'Informar TERMINADO';
-      btn.disabled = false;
+      throw new Error('No se pudo actualizar en la base de datos.');
     }
   } catch (err) {
-    alert("Error de red. Verificá tu conexión.");
+    console.error(err);
+    alert("Error: " + err.message);
     btn.innerText = 'Informar TERMINADO';
     btn.disabled = false;
   }

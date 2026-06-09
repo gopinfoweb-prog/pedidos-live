@@ -322,7 +322,7 @@ async function actualizarEstadoSheety(index, nuevoEstado) {
   
   const body = {
     pedido: {
-      estado: nuevoEstado 
+      ESTADO: nuevoEstado 
     }
   };
 
@@ -333,9 +333,11 @@ async function actualizarEstadoSheety(index, nuevoEstado) {
       body: JSON.stringify(body)
     });
     
+    const data = await response.json();
+    console.log("Respuesta de Sheety:", data);
+    
     if (!response.ok) {
-      const err = await response.text();
-      console.error("Error al actualizar Sheety:", err);
+      console.error("Error al actualizar:", data);
     }
   } catch (error) {
     console.error("Error de conexión:", error);

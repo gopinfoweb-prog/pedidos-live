@@ -316,13 +316,9 @@ const UMBRAL_DIAS = 7;
 function estadoKey(e) { return (e||'').trim().toUpperCase(); }
 function cssKey(e) { return estadoKey(e).replace(/ /g,'-'); }
 
-// ==========================================
-// NUEVA FUNCION PARA IMPACTAR EN SHEETY (CON ALERTA FORZADA)
-// ==========================================
 async function actualizarEstadoSheety(index, nuevoEstado) {
-  // Calculamos el ID. Google Vis API trae los datos desde la fila 2 (índice 0).
-  const sheetyId = index + 2; 
-  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury(baseDeDatosApp)/pedidos/${sheetyId}`;
+  const filaSheet = index + 2; 
+  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury(baseDeDatosApp)/pedidos/${filaSheet}`;
   
   const body = {
     pedido: {
@@ -333,27 +329,18 @@ async function actualizarEstadoSheety(index, nuevoEstado) {
   try {
     const response = await fetch(url, {
       method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json'
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(body)
     });
     
-    const responseText = await response.text();
-    
     if (!response.ok) {
-      alert(`❌ ERROR DE SHEETY (Fila ${sheetyId}):\nCódigo HTTP: ${response.status}\nDetalle: ${responseText}`);
-      console.error(`Error Sheety:`, responseText);
-    } else {
-      alert(`✅ SHEETY RESPONDIÓ OK:\nFila modificada: ${sheetyId}\nRespuesta del servidor:\n${responseText}\n\nRevisá si el JSON dice "estado": "${nuevoEstado}" o si tiene otro nombre de columna.`);
-      console.log(`Sheety OK: Fila ${sheetyId}`, responseText);
+      const err = await response.text();
+      console.error("Error al actualizar Sheety:", err);
     }
   } catch (error) {
-    alert(`⚠️ ERROR DE CONEXIÓN CON SHEETY:\n${error.message}`);
-    console.error('Error de red:', error);
+    console.error("Error de conexión:", error);
   }
 }
-// ==========================================
 
 async function cargarTodo() {
   if (!enPedidos) return;
@@ -496,10 +483,7 @@ function actualizarBotonImprimir() {
 function crearTareasDiarias() {
   seleccionados.forEach(index => {
     if (rawPedidos[index] && rawPedidos[index].c[6]) {
-      // Actualiza localmente para la vista
       rawPedidos[index].c[6].v = 'EN PROCESO';
-      // Envía el cambio a Google Sheets por medio de Sheety
-      actualizarEstadoSheety(index, 'EN PROCESO');
     }
   });
 
@@ -549,9 +533,7 @@ function informarTerminado(index) {
   card.classList.add('titilar-terminado');
   
   if (rawPedidos[index] && rawPedidos[index].c[6]) {
-    // Actualiza localmente
     rawPedidos[index].c[6].v = 'TERMINADO';
-    // Envía el cambio a Google Sheets por medio de Sheety
     actualizarEstadoSheety(index, 'TERMINADO');
   }
 

@@ -316,6 +316,44 @@ const UMBRAL_DIAS = 7;
 function estadoKey(e) { return (e||'').trim().toUpperCase(); }
 function cssKey(e) { return estadoKey(e).replace(/ /g,'-'); }
 
+// ==========================================
+// NUEVA FUNCION PARA IMPACTAR EN SHEETY
+// ==========================================
+async function actualizarEstadoSheety(index, nuevoEstado) {
+  // En Google Sheets la fila 1 tiene los títulos. 
+  // rawPedidos[0] corresponde a la fila 2 del Excel.
+  // Sheety mapea el 'id' según la fila, así que le sumamos 2 al index.
+  const sheetyId = index + 2; 
+  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury(baseDeDatosApp)/pedidos/${sheetyId}`;
+  
+  // Sheety requiere enviar el objeto bajo la raíz singular ('pedido') y en formato camelCase ('estado').
+  const body = {
+    pedido: {
+      estado: nuevoEstado 
+    }
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify(body)
+    });
+    
+    if (!response.ok) {
+      const errorText = await response.text();
+      console.error(`Error al actualizar Sheety en fila ${sheetyId}:`, errorText);
+    } else {
+      console.log(`Sheety OK: Fila ${sheetyId} actualizada correctamente a '${nuevoEstado}'`);
+    }
+  } catch (error) {
+    console.error('Error de red al intentar conectar con Sheety:', error);
+  }
+}
+// ==========================================
+
 async function cargarTodo() {
   if (!enPedidos) return;
   document.getElementById('cards').innerHTML = '<div class="loading">CARGANDO DATOS...</div>';
@@ -457,7 +495,10 @@ function actualizarBotonImprimir() {
 function crearTareasDiarias() {
   seleccionados.forEach(index => {
     if (rawPedidos[index] && rawPedidos[index].c[6]) {
+      // Actualiza localmente para la vista
       rawPedidos[index].c[6].v = 'EN PROCESO';
+      // Envía el cambio a Google Sheets por medio de Sheety
+      actualizarEstadoSheety(index, 'EN PROCESO');
     }
   });
 
@@ -496,53 +537,35 @@ function crearTareasDiarias() {
   if(enPedidos) togglePantalla();
 }
 
-async function informarTerminado(index) {
+function informarTerminado(index) {
   const btn = document.getElementById(`btn-inf-${index}`);
   const card = document.getElementById(`card-tarea-${index}`);
   
-  // Obtenemos el ID de fila (asumiendo columna 0)
-  const idFila = rawPedidos[index].c[0]?.v;
+  btn.innerText = 'TERMINADO';
+  btn.style.backgroundColor = '#ffe600';
+  btn.style.color = '#060a12';
   
-  // URL de tu API de Sheety
-  const url = `https://api.sheety.co/9881a398ec51f24f852a681c04fd8f30/luxury/pedidos/${idFila}`;
+  card.classList.add('titilar-terminado');
   
-  btn.innerText = 'GUARDANDO...';
-  btn.disabled = true;
-  
-  try {
-    const response = await fetch(url, {
-      method: 'PUT',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ pedido: { estado: 'TERMINADO' } })
-    });
-    
-    if (response.ok) {
-      btn.innerText = 'TERMINADO';
-      btn.style.backgroundColor = '#ffe600';
-      btn.style.color = '#060a12';
-      card.classList.add('titilar-terminado');
-      
-      setTimeout(() => {
-        card.style.display = 'none';
-        seleccionados.delete(index);
-        actualizarBotonImprimir();
-        
-        if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
-          if(!enPedidos) togglePantalla();
-          seleccionados.clear();
-          renderizarPedidos();
-          actualizarBotonTareas();
-        }
-      }, 2000);
-    } else {
-      throw new Error('No se pudo actualizar en la base de datos.');
-    }
-  } catch (err) {
-    console.error(err);
-    alert("Error: " + err.message);
-    btn.innerText = 'Informar TERMINADO';
-    btn.disabled = false;
+  if (rawPedidos[index] && rawPedidos[index].c[6]) {
+    // Actualiza localmente
+    rawPedidos[index].c[6].v = 'TERMINADO';
+    // Envía el cambio a Google Sheets por medio de Sheety
+    actualizarEstadoSheety(index, 'TERMINADO');
   }
+
+  setTimeout(() => {
+    card.style.display = 'none';
+    seleccionados.delete(index);
+    actualizarBotonImprimir();
+    
+    if (document.querySelectorAll('#cardsTareas .card:not([style*="display: none"])').length === 0) {
+      if(!enPedidos) togglePantalla();
+      seleccionados.clear();
+      renderizarPedidos();
+      actualizarBotonTareas();
+    }
+  }, 5000); 
 }
 
 function togglePantalla() {
@@ -575,10 +598,12 @@ function imprimirPDF() {
     return;
   }
   
+  // 1. Preparar el contenedor espejo para la captura
   const now = new Date();
   const fecha = `${String(now.getDate()).padStart(2, '0')}/${String(now.getMonth() + 1).padStart(2, '0')}/${String(now.getFullYear()).slice(-2)}`;
   const hora = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
 
+  // Creamos dinámicamente una estructura limpia solo para el PDF
   let htmlPDF = `
     <div style="font-family: 'Courier New', Courier, monospace; color: #000; padding: 20px;">
       <div style="display: flex; justify-content: space-between; border-bottom: 2px solid #000; padding-bottom: 10px; margin-bottom: 20px;">
@@ -603,6 +628,7 @@ function imprimirPDF() {
 
   htmlPDF += `</div></div>`;
 
+  // 2. Usar un elemento temporal para el renderizado
   const divTemp = document.createElement('div');
   divTemp.innerHTML = htmlPDF;
   document.body.appendChild(divTemp);
@@ -615,6 +641,7 @@ function imprimirPDF() {
     jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
   };
   
+  // 3. Generar y limpiar
   html2pdf().set(opt).from(divTemp).save().then(() => {
     document.body.removeChild(divTemp);
   });
